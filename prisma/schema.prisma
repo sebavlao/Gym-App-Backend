@@ -12,7 +12,137 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  Admin
+  Coach
+  Client
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
+  id               String            @id @default(uuid())
+  email            String            @unique
+  role             Role
+  qr_code          String?
+  
+  // Relations
+  clientDetail     Client_Detail?
+  coachDetail      Coach_Detail?
+  memberships      Membership[]
+  routinesAsClient Routine[]         @relation("ClientRoutines")
+  routinesAsCoach  Routine[]         @relation("CoachRoutines")
+  sentMessages     Chat_Message[]    @relation("SentMessages")
+  receivedMessages Chat_Message[]    @relation("ReceivedMessages")
+  logAsClient      Training_Log[]
+  mealPlans        Meal_Plan[]
+
+  // Constraint: Un User solo puede tener un Client_Detail o un Coach_Detail.
+  // Nota: Dado que Prisma no soporta XOR constraints nativos a nivel de DB 
+  // (CHECK constraints inter-tablas o de multiples columnas condicionales fácilmente),
+  // se debe asegurar esto en la capa de Aplicación (Application Layer/Domain) 
+  // o agregando un simple trigger / CHECK en SQL Raw en la migración.
+}
+
+model Client_Detail {
+  id                String             @id @default(uuid())
+  user_id           String             @unique
+  user              User               @relation(fields: [user_id], references: [id])
+  blood_type        String?
+  pathologies       String?
+  allergies         String?
+  observations      String?
+  emergency_contact String?
+  physicalProfiles  Physical_Profile[]
+}
+
+model Coach_Detail {
+  id                String       @id @default(uuid())
+  user_id           String       @unique
+  user              User         @relation(fields: [user_id], references: [id])
+  blood_type        String?
+  pathologies       String?
+  allergies         String?
+  observations      String?
+  emergency_contact String?
+  memberships       Membership[]
+}
+
+model Gym {
+  id          String       @id @default(uuid())
+  name        String
+  address     String
+  memberships Membership[]
+}
+
+model Membership {
+  id           String            @id @default(uuid())
+  user_id      String
+  user         User              @relation(fields: [user_id], references: [id])
+  gym_id       String
+  gym          Gym               @relation(fields: [gym_id], references: [id])
+  coach_id     String?
+  coach        Coach_Detail?     @relation(fields: [coach_id], references: [id])
+  status       String
+}
+
+model Physical_Profile {
+  id                  String        @id @default(uuid())
+  client_detail_id    String
+  client_detail       Client_Detail @relation(fields: [client_detail_id], references: [id])
+  weight              Float
+  height              Float
+  body_fat_percentage Float?
+  recorded_at         DateTime      @default(now())
+}
+
+model Exercise {
+  id               String             @id @default(uuid())
+  name             String
+  muscle_group     String
+  media_url        String?
+  routineExercises Routine_Exercise[]
+}
+
+model Routine {
+  id               String             @id @default(uuid())
+  client_id        String
+  client           User               @relation("ClientRoutines", fields: [client_id], references: [id])
+  coach_id         String
+  coach            User               @relation("CoachRoutines", fields: [coach_id], references: [id])
+  routineExercises Routine_Exercise[]
+}
+
+model Routine_Exercise {
+  id           String         @id @default(uuid())
+  routine_id   String
+  routine      Routine        @relation(fields: [routine_id], references: [id])
+  exercise_id  String
+  exercise     Exercise       @relation(fields: [exercise_id], references: [id])
+  trainingLogs Training_Log[]
+}
+
+model Training_Log {
+  id                  String           @id @default(uuid())
+  client_id           String
+  client              User             @relation(fields: [client_id], references: [id])
+  routine_exercise_id String
+  routine_exercise    Routine_Exercise @relation(fields: [routine_exercise_id], references: [id])
+  weight_used         Float
+  actual_reps         Int
+  calories_burned     Float?
+}
+
+model Meal_Plan {
+  id        String @id @default(uuid())
+  client_id String
+  client    User   @relation(fields: [client_id], references: [id])
+}
+
+model Chat_Message {
+  id          String   @id @default(uuid())
+  sender_id   String
+  sender      User     @relation("SentMessages", fields: [sender_id], references: [id])
+  receiver_id String
+  receiver    User     @relation("ReceivedMessages", fields: [receiver_id], references: [id])
+  content     String
+  sent_at     DateTime @default(now())
 }
