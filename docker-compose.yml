@@ -1,0 +1,35 @@
+services:
+  db-gym:
+    image: postgres:16-alpine
+    container_name: gym_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-gym_db}
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  api-gym:
+    build:
+      context: .
+      target: dev # Si usas multi-stage en el Dockerfile
+    container_name: gym_backend
+    restart: on-failure # En dev, mejor que 'always' para no loopear errores
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    depends_on:
+      - db-gym
+    volumes:
+      - .:/app # Mapea todo el proyecto
+      - /app/node_modules # Evita que los node_modules del host pisen los del container
+      - ./logs:/app/logs
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+
+volumes:
+  db_data:
