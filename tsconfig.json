@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "ESNext",
+    "moduleResolution": "Bundler", // O "NodeNext" si no usas un bundler (Vite/Esbuild)
+    "lib": ["ES2023"],
+
+    // Quité "types": [] para que TS pueda encontrar @types/node y Prisma
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+
+    // Si vas a usar Express con TS, necesitas esto para que reconozca "process", etc.
+    "types": ["node"]
+  },
+  "include": ["src/**/*"]
+}
