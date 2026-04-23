@@ -19,19 +19,19 @@ enum Role {
 }
 
 model User {
-  id               String            @id @default(uuid())
-  email            String            @unique
-  role             Role
-  qr_code          String?
-  
+  id      String  @id @default(uuid())
+  email   String  @unique
+  role    Role
+  qr_code String?
+
   // Relations
   clientDetail     Client_Detail?
   coachDetail      Coach_Detail?
   memberships      Membership[]
-  routinesAsClient Routine[]         @relation("ClientRoutines")
-  routinesAsCoach  Routine[]         @relation("CoachRoutines")
-  sentMessages     Chat_Message[]    @relation("SentMessages")
-  receivedMessages Chat_Message[]    @relation("ReceivedMessages")
+  routinesAsClient Routine[]      @relation("ClientRoutines")
+  routinesAsCoach  Routine[]      @relation("CoachRoutines")
+  sentMessages     Chat_Message[] @relation("SentMessages")
+  receivedMessages Chat_Message[] @relation("ReceivedMessages")
   logAsClient      Training_Log[]
   mealPlans        Meal_Plan[]
 
@@ -74,14 +74,14 @@ model Gym {
 }
 
 model Membership {
-  id           String            @id @default(uuid())
-  user_id      String
-  user         User              @relation(fields: [user_id], references: [id])
-  gym_id       String
-  gym          Gym               @relation(fields: [gym_id], references: [id])
-  coach_id     String?
-  coach        Coach_Detail?     @relation(fields: [coach_id], references: [id])
-  status       String
+  id       String        @id @default(uuid())
+  user_id  String
+  user     User          @relation(fields: [user_id], references: [id])
+  gym_id   String
+  gym      Gym           @relation(fields: [gym_id], references: [id])
+  coach_id String?
+  coach    Coach_Detail? @relation(fields: [coach_id], references: [id])
+  status   String
 }
 
 model Physical_Profile {
