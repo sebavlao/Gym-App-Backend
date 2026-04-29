@@ -1,7 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Prisma schema file
 
 generator client {
   provider = "prisma-client"
@@ -19,27 +16,29 @@ enum Role {
 }
 
 model User {
-  id      String  @id @default(uuid())
-  email   String  @unique
-  role    Role
-  qr_code String?
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  role     Role
+  qr_code  String?
 
-  // Relations
-  clientDetail     Client_Detail?
-  coachDetail      Coach_Detail?
-  memberships      Membership[]
+  // Detalles específicos según el rol
+  clientDetail Client_Detail?
+  coachDetail  Coach_Detail?
+
+  // RELACIONES DE MEMBRESÍA (Corregido)
+  // Membresías que el usuario "compra" como cliente
+  memberships        Membership[] @relation("UserMemberships")
+  // Membresías donde este usuario es el coach asignado
+  membershipsAsCoach Membership[] @relation("CoachAssignment")
+
+  // Otras relaciones existentes
   routinesAsClient Routine[]      @relation("ClientRoutines")
   routinesAsCoach  Routine[]      @relation("CoachRoutines")
   sentMessages     Chat_Message[] @relation("SentMessages")
   receivedMessages Chat_Message[] @relation("ReceivedMessages")
   logAsClient      Training_Log[]
   mealPlans        Meal_Plan[]
-
-  // Constraint: Un User solo puede tener un Client_Detail o un Coach_Detail.
-  // Nota: Dado que Prisma no soporta XOR constraints nativos a nivel de DB 
-  // (CHECK constraints inter-tablas o de multiples columnas condicionales fácilmente),
-  // se debe asegurar esto en la capa de Aplicación (Application Layer/Domain) 
-  // o agregando un simple trigger / CHECK en SQL Raw en la migración.
 }
 
 model Client_Detail {
@@ -55,15 +54,14 @@ model Client_Detail {
 }
 
 model Coach_Detail {
-  id                String       @id @default(uuid())
-  user_id           String       @unique
-  user              User         @relation(fields: [user_id], references: [id])
+  id                String  @id @default(uuid())
+  user_id           String  @unique
+  user              User    @relation(fields: [user_id], references: [id])
   blood_type        String?
   pathologies       String?
   allergies         String?
   observations      String?
   emergency_contact String?
-  memberships       Membership[]
 }
 
 model Gym {
@@ -74,14 +72,20 @@ model Gym {
 }
 
 model Membership {
-  id       String        @id @default(uuid())
-  user_id  String
-  user     User          @relation(fields: [user_id], references: [id])
-  gym_id   String
-  gym      Gym           @relation(fields: [gym_id], references: [id])
+  id String @id @default(uuid())
+
+  // Relación con el Cliente (Dueño de la membresía)
+  user_id String
+  user    User   @relation("UserMemberships", fields: [user_id], references: [id])
+
+  gym_id String
+  gym    Gym    @relation(fields: [gym_id], references: [id])
+
+  // Relación con el Coach asignado (Corregido)
   coach_id String?
-  coach    Coach_Detail? @relation(fields: [coach_id], references: [id])
-  status   String
+  coach    User?   @relation("CoachAssignment", fields: [coach_id], references: [id])
+
+  status String
 }
 
 model Physical_Profile {

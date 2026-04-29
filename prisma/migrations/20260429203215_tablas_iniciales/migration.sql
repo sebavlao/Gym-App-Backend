@@ -1,21 +1,16 @@
-/*
-  Warnings:
-
-  - The primary key for the `User` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - Added the required column `role` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('Admin', 'Coach', 'Client');
 
--- AlterTable
-ALTER TABLE "User" DROP CONSTRAINT "User_pkey",
-ADD COLUMN     "qr_code" TEXT,
-ADD COLUMN     "role" "Role" NOT NULL,
-ALTER COLUMN "id" DROP DEFAULT,
-ALTER COLUMN "id" SET DATA TYPE TEXT,
-ADD CONSTRAINT "User_pkey" PRIMARY KEY ("id");
-DROP SEQUENCE "User_id_seq";
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" "Role" NOT NULL,
+    "qr_code" TEXT,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Client_Detail" (
@@ -135,6 +130,9 @@ CREATE TABLE "Chat_Message" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Client_Detail_user_id_key" ON "Client_Detail"("user_id");
 
 -- CreateIndex
@@ -153,7 +151,7 @@ ALTER TABLE "Membership" ADD CONSTRAINT "Membership_user_id_fkey" FOREIGN KEY ("
 ALTER TABLE "Membership" ADD CONSTRAINT "Membership_gym_id_fkey" FOREIGN KEY ("gym_id") REFERENCES "Gym"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Membership" ADD CONSTRAINT "Membership_coach_id_fkey" FOREIGN KEY ("coach_id") REFERENCES "Coach_Detail"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Membership" ADD CONSTRAINT "Membership_coach_id_fkey" FOREIGN KEY ("coach_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Physical_Profile" ADD CONSTRAINT "Physical_Profile_client_detail_id_fkey" FOREIGN KEY ("client_detail_id") REFERENCES "Client_Detail"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
