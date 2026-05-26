@@ -1,15 +1,25 @@
 import express from 'express';
-import { PrismaClient } from './generated/prisma/client';
+// @ts-ignore - Prisma genera el cliente dinámicamente en esta ruta personalizada
+import { PrismaClient } from './generated/prisma/client/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { exerciseRoutes } from './infrastructure/routes/exercise.routes';
+import { userRoutes } from './infrastructure/routes/user.routes.js'; 
+import { gymRoutes } from './infrastructure/routes/gym.routes.js';
 
 const connectionString = process.env.DATABASE_URL;
 
 const app = express();
 const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+export const prisma = new PrismaClient({ adapter });
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use('/exercises', exerciseRoutes);
+app.use('/users', userRoutes); 
+app.use('/gyms', gymRoutes);
+
+
+
 
 async function startServer() {
   try {
