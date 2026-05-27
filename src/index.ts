@@ -6,6 +6,8 @@ import { exerciseRoutes } from './infrastructure/routes/exercise.routes';
 import { userRoutes } from './infrastructure/routes/user.routes.js'; 
 import { gymRoutes } from './infrastructure/routes/gym.routes.js';
 import { membershipRoutes } from './infrastructure/routes/membership.routes.js';
+import { routineRoutes } from './infrastructure/routes/routine.routes.js'; 
+import { trainingLogRoutes } from './infrastructure/routes/training-log.routes.js';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -19,6 +21,8 @@ app.use('/exercises', exerciseRoutes);
 app.use('/users', userRoutes); 
 app.use('/gyms', gymRoutes);
 app.use('/memberships', membershipRoutes);
+app.use('/routines', routineRoutes);
+app.use('/training-logs', trainingLogRoutes);
 
 
 
