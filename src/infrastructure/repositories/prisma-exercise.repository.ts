@@ -9,17 +9,27 @@ const adapter = new PrismaPg({ connectionString });
 const localPrisma = new PrismaClient({ adapter });
 
 export class PrismaExerciseRepository implements ExerciseRepository {
-  async findAll(): Promise<Exercise[]> {
-    return localPrisma.exercise.findMany();
-  }
-
-  async create(data: { name: string; muscle_group: string; media_url?: string }): Promise<Exercise> {
+  async create(data: {
+    name: string;
+    muscle_group: string;
+    media_url?: string | null;
+  }): Promise<Exercise> {
     return localPrisma.exercise.create({
       data: {
         name: data.name,
         muscle_group: data.muscle_group,
         media_url: data.media_url ?? null,
       },
+    });
+  }
+
+  async findAll(): Promise<Exercise[]> {
+    return localPrisma.exercise.findMany();
+  }
+
+  async findById(id: string): Promise<Exercise | null> {
+    return localPrisma.exercise.findUnique({
+      where: { id },
     });
   }
 }

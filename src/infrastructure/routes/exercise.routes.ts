@@ -12,7 +12,7 @@ const getExercisesUseCase = new GetExercisesUseCase(repository);
 const createExerciseUseCase = new CreateExerciseUseCase(repository);
 
 // Le pasamos ambos casos de uso al controlador
-const controller = new ExerciseController(getExercisesUseCase, createExerciseUseCase);
+const controller = new ExerciseController(createExerciseUseCase, getExercisesUseCase);
 
 router.get('/', (req, res) => controller.getAll(req, res));
 router.post('/', (req, res) => controller.create(req, res)); // <-- REGISTRAMOS EL POST
