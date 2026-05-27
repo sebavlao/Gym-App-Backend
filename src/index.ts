@@ -5,6 +5,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { exerciseRoutes } from './infrastructure/routes/exercise.routes';
 import { userRoutes } from './infrastructure/routes/user.routes.js'; 
 import { gymRoutes } from './infrastructure/routes/gym.routes.js';
+import { membershipRoutes } from './infrastructure/routes/membership.routes.js';
 
 const connectionString = process.env.DATABASE_URL;
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/exercises', exerciseRoutes);
 app.use('/users', userRoutes); 
 app.use('/gyms', gymRoutes);
+app.use('/memberships', membershipRoutes);
 
 
 
