@@ -3,15 +3,15 @@ import express from 'express';
 import { PrismaClient } from './generated/prisma/client/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import { exerciseRoutes } from './infrastructure/routes/exercise.routes.js';
-import userRoutes from './modules/users/infrastructure/routes/user.routes.js';
-import { gymRoutes } from './infrastructure/routes/gym.routes.js';
-import { routineRoutes } from './infrastructure/routes/routine.routes.js'; 
-import { trainingLogRoutes } from './infrastructure/routes/training-log.routes.js';
-
+// Nuevas rutas modulares conectadas a sus ubicaciones reales
+import { exerciseRoutes } from './modules/workouts/infrastructure/routes/exercise.routes.js';
+import { routineRoutes } from './modules/workouts/infrastructure/routes/routine.routes.js'; 
+import { trainingLogRoutes } from './modules/workouts/infrastructure/routes/training-log.routes.js';
+import { gymRoutes } from './modules/gyms/infrastructure/routes/gym.routes.js';
 import MembershipRoutes from './modules/gyms/infrastructure/routes/Membership.routes.js';
+import userRoutes from './modules/users/infrastructure/routes/user.routes.js';
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL!;
 
 const app = express();
 const adapter = new PrismaPg({ connectionString });
@@ -19,6 +19,8 @@ export const prisma = new PrismaClient({ adapter });
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Despachadores mapeados a las nuevas rutas
 app.use('/exercises', exerciseRoutes);
 app.use('/users', userRoutes);
 app.use('/gyms', gymRoutes);
