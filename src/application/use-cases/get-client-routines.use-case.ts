@@ -1,4 +1,4 @@
-import type { RoutineRepository, RoutineWithExercises } from '../../domain/repositories/routine.repository.js';
+import type { RoutineRepository, RoutineWithExercises } from '../../modules/trainings/domain/routine.repository.js';
 
 export class GetClientRoutinesUseCase {
   constructor(private routineRepository: RoutineRepository) {}

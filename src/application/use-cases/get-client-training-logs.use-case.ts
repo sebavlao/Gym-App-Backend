@@ -1,4 +1,4 @@
-import type { TrainingLogRepository } from '../../domain/repositories/training-log.repository.js';
+import type { TrainingLogRepository } from '../../modules/trainings/domain/training-log.repository.js';
 import type { Training_Log } from '../../generated/prisma/client/client.js';
 
 export class GetClientTrainingLogsUseCase {

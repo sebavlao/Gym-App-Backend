@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import type { RoutineRepository, RoutineWithExercises } from '../../domain/repositories/routine.repository.js';
+import type { RoutineRepository, RoutineWithExercises } from '../../modules/trainings/domain/routine.repository.js';
 import type { Routine } from '../../generated/prisma/client/client.js';
 import { PrismaClient } from '../../generated/prisma/client/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';

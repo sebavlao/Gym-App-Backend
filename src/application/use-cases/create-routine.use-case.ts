@@ -1,4 +1,4 @@
-import type { RoutineRepository } from '../../domain/repositories/routine.repository.js';
+import type { RoutineRepository } from '../../modules/trainings/domain/routine.repository.js';
 import type { Routine } from '../../generated/prisma/client/client.js';
 
 interface CreateRoutineInput {

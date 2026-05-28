@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
-import { CreateMembershipUseCase } from '../../application/use-cases/create-membership.use-case.js';
-import { GetMembershipQrUseCase } from '../../application/use-cases/get-membership-qr.use-case.js';
-import { ValidateMembershipUseCase } from '../../application/use-cases/validate-membership.use-case.js';
+import { CreateMembershipUseCase } from '../../application/use-cases/CreateMembershipUseCase.js';
+import { GetMembershipQrUseCase } from '../../application/use-cases/GetMembershipQrUseCase.js';
+import { ValidateMembershipUseCase } from '../../application/use-cases/ValidateMembershipUseCase.js';
 
 export class MembershipController {
   constructor(
@@ -12,20 +12,20 @@ export class MembershipController {
 
   async create(req: Request, res: Response) {
     try {
-      const { user_id, gym_id, coach_id, status } = req.body;
+      const { user_id, gym_id, coach_id } = req.body;
 
-      if (!user_id || !gym_id || !status) {
-        return res.status(400).json({ error: 'Faltan campos obligatorios: user_id, gym_id y status' });
+      if (!user_id || !gym_id) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios: user_id y gym_id' });
       }
 
-      const newMembership = await this.createMembershipUseCase.execute({
-        user_id,
-        gym_id,
-        coach_id,
-        status
+      await this.createMembershipUseCase.execute({
+        id: crypto.randomUUID(),
+        userId: user_id,
+        gymId: gym_id,
+        coachId: coach_id
       });
 
-      res.status(201).json(newMembership);
+      res.status(201).json({ message: 'Membresía creada o actualizada en el sistema.' });
     } catch (error: any) {
       console.error('🔴 ERROR EN MEMBERSHIP CONTROLLER (CREATE):', error);
       res.status(400).json({ error: error.message || 'Error al crear la membresía' });
@@ -59,10 +59,16 @@ export class MembershipController {
       const result = await this.validateMembershipUseCase.execute(id as string);
       
       if (!result.accessGranted) {
-        return res.status(403).json(result);
+        return res.status(403).json({
+          accessGranted: result.accessGranted,
+          message: result.message
+        });
       }
 
-      res.status(200).json(result);
+      res.status(200).json({
+        accessGranted: result.accessGranted,
+        message: result.message
+      });
     } catch (error: any) {
       console.error('🔴 ERROR EN MEMBERSHIP CONTROLLER (VALIDATE):', error);
       res.status(400).json({ error: error.message || 'Error al validar la membresía' });

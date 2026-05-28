@@ -1,4 +1,5 @@
-import type { Routine, Routine_Exercise } from '../../generated/prisma/client/client.js';
+import type { Routine, Routine_Exercise } from '../../../../generated/prisma/client/client.js';
+
 
 // Definimos un tipo compuesto para cuando queramos recuperar la rutina con sus ejercicios adentro
 export type RoutineWithExercises = Routine & {

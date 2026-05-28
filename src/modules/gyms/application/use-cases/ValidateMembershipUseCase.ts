@@ -1,17 +1,17 @@
-import type { MembershipRepository } from '../../domain/repositories/membership.repository.js';
-import type { Membership } from '../../generated/prisma/client/client.js';
+import type { IMembershipRepository } from '../../domain/repositories/IMembershipRepository.js';
+import { Membership } from '../../domain/entities/Membership.js';
 
 export class ValidateMembershipUseCase {
-  constructor(private membershipRepository: MembershipRepository) {}
+  constructor(private membershipRepository: IMembershipRepository) {}
 
   async execute(membershipId: string): Promise<{ accessGranted: boolean; membership: Membership; message: string }> {
     const membership = await this.membershipRepository.findById(membershipId);
-
+    
     if (!membership) {
       throw new Error('Acceso denegado: La membresía escaneada no existe en el sistema.');
     }
 
-    if (membership.status.toLowerCase() !== 'active') {
+    if (membership.status !== 'active') {
       return {
         accessGranted: false,
         membership,

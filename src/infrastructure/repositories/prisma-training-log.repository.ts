@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import type { TrainingLogRepository } from '../../domain/repositories/training-log.repository.js';
+import type { TrainingLogRepository } from '../../modules/trainings/domain/training-log.repository.js';
 import type { Training_Log } from '../../generated/prisma/client/client.js';
 import { PrismaClient } from '../../generated/prisma/client/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
