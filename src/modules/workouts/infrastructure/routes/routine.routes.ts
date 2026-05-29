@@ -14,6 +14,8 @@ const getClientRoutinesUseCase = new GetClientRoutinesUseCase(repository);
 const controller = new RoutineController(createRoutineUseCase, getClientRoutinesUseCase);
 
 router.post('/', (req, res) => controller.create(req, res));
-router.get('/client/:client_id', (req, res) => controller.getByClient(req, res));
+
+// FIX AQUÍ: Cambiamos :client_id por :clientId para que machee con el controlador
+router.get('/client/:clientId', (req, res) => controller.getByClient(req, res));
 
 export const routineRoutes = router;
