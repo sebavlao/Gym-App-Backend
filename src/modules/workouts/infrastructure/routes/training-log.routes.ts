@@ -15,6 +15,8 @@ const getClientTrainingLogsUseCase = new GetClientTrainingLogsUseCase(repository
 const controller = new TrainingLogController(createTrainingLogUseCase, getClientTrainingLogsUseCase);
 
 router.post('/', (req, res) => controller.create(req, res));
-router.get('/client/:client_id', (req, res) => controller.getByClient(req, res));
+
+// CAMBIO AQUÍ: Cambiamos :client_id por :clientId para que machee con el controlador
+router.get('/client/:clientId', (req, res) => controller.getByClient(req, res));
 
 export const trainingLogRoutes = router;

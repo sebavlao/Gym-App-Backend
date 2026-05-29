@@ -1,12 +1,8 @@
 import { Exercise } from '../entities/Exercise.js';
 
 export interface ExerciseRepository {
-  create(data: {
-    name: string;
-    muscle_group: string;
-    media_url?: string | null;
-  }): Promise<Exercise>; // Ahora es la entidad
-
+  // El repositorio ahora acepta la Entidad completa
+  create(exercise: Exercise): Promise<Exercise>; 
   findAll(): Promise<Exercise[]>;
   findById(id: string): Promise<Exercise | null>;
 }

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
-import type { CreateExerciseUseCase } from '../../application/use-cases/create-exercise.use-case.js';
-import type { GetExercisesUseCase } from '../../application/use-cases/get-exercises.use-case.js';
+import type { CreateExerciseUseCase } from '../../application/use-cases/exercises/create-exercise.use-case.js';
+import type { GetExercisesUseCase } from '../../application/use-cases/exercises/get-exercises.use-case.js';
 
 export class ExerciseController {
   constructor(
@@ -15,12 +15,12 @@ export class ExerciseController {
       if (!name || !muscle_group) {
         return res.status(400).json({ error: 'Faltan campos obligatorios: name y muscle_group' });
       }
-
-      const newExercise = await this.createExerciseUseCase.execute({
-        name,
-        muscle_group,
-        media_url
-      });
+      
+    const newExercise = await this.createExerciseUseCase.execute({
+      name,
+      muscle_group, 
+      media_url
+    });
 
       res.status(201).json(newExercise);
     } catch (error: any) {

@@ -1,5 +1,6 @@
 import type { ExerciseRepository } from '../../../domain/repositories/IExerciseRepository.js';
-import type { Exercise } from '../../../../../generated/prisma/client/client.js';
+import { Exercise } from '../../../domain/entities/Exercise.js';
+import { randomUUID } from 'crypto';
 
 interface CreateExerciseInput {
   name: string;
@@ -10,7 +11,16 @@ interface CreateExerciseInput {
 export class CreateExerciseUseCase {
   constructor(private exerciseRepository: ExerciseRepository) {}
 
-  async execute(input: CreateExerciseInput): Promise<Exercise> {
-    return this.exerciseRepository.create(input);
+  async execute(input: CreateExerciseInput) {
+    // 1. Creamos la entidad (validada)
+    const exercise = Exercise.create({
+      id: randomUUID(),
+      name: input.name,
+      muscleGroup: input.muscle_group, // Mapeo de snake a camel
+      mediaUrl: input.media_url ?? null
+    });
+
+    // 2. Pasamos la entidad completa al repositorio
+    return await this.exerciseRepository.create(exercise);
   }
 }

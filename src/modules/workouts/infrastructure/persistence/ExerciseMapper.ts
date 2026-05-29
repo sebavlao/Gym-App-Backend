@@ -4,12 +4,13 @@ import type { Exercise as PrismaExercise } from '../../../../generated/prisma/cl
 export class ExerciseMapper {
   // Convierte de Prisma (base de datos) a tu Dominio (App)
   static toDomain(raw: PrismaExercise): Exercise {
-    return new Exercise(
-      raw.id,
-      raw.name,
-      raw.muscle_group,
-      raw.media_url
-    );
+    // Usamos el método estático create, no el constructor
+    return Exercise.create({
+      id: raw.id,
+      name: raw.name,
+      muscleGroup: raw.muscle_group,
+      mediaUrl: raw.media_url
+    });
   }
 
   // Convierte de tu Dominio (App) a Prisma (para guardar)

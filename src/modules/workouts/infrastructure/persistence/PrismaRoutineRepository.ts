@@ -20,7 +20,12 @@ export class PrismaRoutineRepository implements RoutineRepository {
           })),
         },
       },
-    });
+      // CAMBIO CLAVE: Obligamos a Prisma a que nos devuelva los IDs que genera en la intermedia
+      include: {
+        routineExercises: true
+      }
+    }) as unknown as Routine; 
+    // Usamos el cast temporal para que no te chillen los tipos existentes si la interfaz pide solo Routine
   }
 
   async findByClientId(client_id: string): Promise<RoutineWithExercises[]> {

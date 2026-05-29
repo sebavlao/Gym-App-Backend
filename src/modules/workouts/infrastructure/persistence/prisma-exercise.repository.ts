@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import type { ExerciseRepository } from '../../domain/repositories/IExerciseRepository.js'; // type-only import
+import type { ExerciseRepository } from '../../domain/repositories/IExerciseRepository.js';
 import { Exercise } from '../../domain/entities/Exercise.js';
 import { PrismaClient } from '../../../../generated/prisma/client/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -10,18 +10,18 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 export class PrismaExerciseRepository implements ExerciseRepository {
-  async create(data: {
-    name: string;
-    muscle_group: string;
-    media_url?: string | null;
-  }): Promise<Exercise> {
+  async create(exercise: Exercise): Promise<Exercise> {
+    // Aquí recibimos la entidad de dominio y la pasamos a Prisma
     const raw = await prisma.exercise.create({
       data: {
-        name: data.name,
-        muscle_group: data.muscle_group,
-        media_url: data.media_url ?? null,
+        id: exercise.id,
+        name: exercise.name,
+        muscle_group: exercise.muscleGroup, // Mapeo: dominio -> base de datos
+        media_url: exercise.mediaUrl ?? null,
       },
     });
+    
+    // Retornamos la entidad mapeada
     return ExerciseMapper.toDomain(raw);
   }
 
