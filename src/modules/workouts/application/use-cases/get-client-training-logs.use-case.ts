@@ -1,10 +1,10 @@
-import type { TrainingLogRepository } from '../../modules/trainings/domain/training-log.repository.js';
-import type { Training_Log } from '../../generated/prisma/client/client.js';
+import type { TrainingLogRepository } from '../../domain/repositories/ITrainingLogRepository.js';
 
 export class GetClientTrainingLogsUseCase {
   constructor(private trainingLogRepository: TrainingLogRepository) {}
 
-  async execute(clientId: string): Promise<Training_Log[]> {
+  // 🛠️ Cambiamos el retorno a Promise<any[]> para acoplarse a la respuesta del repositorio
+  async execute(clientId: string): Promise<any[]> {
     if (!clientId) {
       throw new Error('Falta el ID del cliente para obtener el historial.');
     }

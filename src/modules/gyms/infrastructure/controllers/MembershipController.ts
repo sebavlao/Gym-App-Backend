@@ -12,17 +12,18 @@ export class MembershipController {
 
   async create(req: Request, res: Response) {
     try {
-      const { user_id, gym_id, coach_id } = req.body;
+      const { id, user_id, gym_id, coach_id, status } = req.body;
 
       if (!user_id || !gym_id) {
         return res.status(400).json({ error: 'Faltan campos obligatorios: user_id y gym_id' });
       }
 
       await this.createMembershipUseCase.execute({
-        id: crypto.randomUUID(),
+        id: id || crypto.randomUUID(),
         userId: user_id,
         gymId: gym_id,
-        coachId: coach_id
+        coachId: coach_id,
+        status: status // Ahora sí compila perfecto
       });
 
       res.status(201).json({ message: 'Membresía creada o actualizada en el sistema.' });

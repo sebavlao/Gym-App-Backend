@@ -7,9 +7,15 @@ export class PrismaRoutineRepository implements RoutineRepository {
   async create(data: {
     client_id: string;
     coach_id: string;
-    exercises: { exercise_id: string }[];
+    exercises: {
+      exercise_id: string;
+      series: number;
+      repetitions: string;
+      rest_time?: number | null;
+      order: number;
+    }[];
   }): Promise<Routine> {
-    // Usamos create de Prisma con "createMany" anidado para la tabla intermedia
+    // Usamos create de Prisma mapeando todas las propiedades de la dosificación
     return prisma.routine.create({
       data: {
         client_id: data.client_id,
@@ -17,15 +23,17 @@ export class PrismaRoutineRepository implements RoutineRepository {
         routineExercises: {
           create: data.exercises.map((ex) => ({
             exercise_id: ex.exercise_id,
+            series: ex.series,
+            repetitions: ex.repetitions,
+            rest_time: ex.rest_time ?? null,
+            order: ex.order,
           })),
         },
       },
-      // CAMBIO CLAVE: Obligamos a Prisma a que nos devuelva los IDs que genera en la intermedia
       include: {
         routineExercises: true
       }
-    }) as unknown as Routine; 
-    // Usamos el cast temporal para que no te chillen los tipos existentes si la interfaz pide solo Routine
+    }) as unknown as Routine;
   }
 
   async findByClientId(client_id: string): Promise<RoutineWithExercises[]> {

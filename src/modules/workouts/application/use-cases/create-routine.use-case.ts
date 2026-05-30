@@ -4,7 +4,13 @@ import type { Routine } from '../../../../generated/prisma/client/client.js';
 interface CreateRoutineInput {
   client_id: string;
   coach_id: string;
-  exercises: { exercise_id: string }[];
+  exercises: {
+    exercise_id: string;
+    series: number;
+    repetitions: string;
+    rest_time?: number | null;
+    order: number;
+  }[];
 }
 
 export class CreateRoutineUseCase {

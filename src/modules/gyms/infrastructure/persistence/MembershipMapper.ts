@@ -1,8 +1,8 @@
 import type {
   Prisma,
   Membership as PrismaMembership,
-} from '../../../../generated/prisma/client/browser';
-import { Membership, MembershipStatus } from '../../domain/entities/Membership';
+} from '../../../../generated/prisma/client/browser'; // Volvemos a tu importación original que funciona
+import { Membership, MembershipStatus } from '../../domain/entities/Membership.js';
 
 type PrismaMembershipDetails = Prisma.MembershipGetPayload<{
   include: {
@@ -22,6 +22,8 @@ export class MembershipMapper {
       gymId: prismaMembershipDetails.gym_id,
       coachId: prismaMembershipDetails.coach_id,
       status: prismaMembershipDetails.status as MembershipStatus,
+      // Mantenemos la data del usuario para el traspaso de gimnasios
+      userDetails: prismaMembershipDetails.user, 
     });
   }
 

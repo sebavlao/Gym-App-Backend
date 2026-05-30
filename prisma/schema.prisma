@@ -99,10 +99,15 @@ model Physical_Profile {
 }
 
 model Exercise {
-  id               String             @id @default(uuid())
+  id               String            @id @default(uuid())
   name             String
   muscle_group     String
   media_url        String?
+  
+  // FIX PARA SAAS: Si es null, es un ejercicio global del sistema. Si tiene ID, es exclusivo de ese gimnasio.
+  gym_id           String?
+  is_custom        Boolean           @default(false)
+  
   routineExercises Routine_Exercise[]
 }
 
@@ -118,10 +123,20 @@ model Routine {
 model Routine_Exercise {
   id           String         @id @default(uuid())
   routine_id   String
-  routine      Routine        @relation(fields: [routine_id], references: [id])
+  routine      Routine        @relation(fields: [routine_id], references: [id], onDelete: Cascade)
   exercise_id  String
   exercise     Exercise       @relation(fields: [exercise_id], references: [id])
+  
+  // 🔥 FIX CRÍTICO: Los "numeritos" que setea el profesor desde el panel
+  series       Int            // Ej: 4
+  repetitions  String         // Lo dejamos String para admitir variantes como "12", "10-12" o "Al fallo"
+  rest_time    Int?           // Tiempo de descanso en segundos (opcional)
+  order        Int            // Para ordenar los ejercicios en la interfaz (1º, 2º, 3º...) 
+
   trainingLogs Training_Log[]
+
+  // Restricción para evitar asignar el mismo ejercicio dos veces dentro de la misma rutina
+  @@unique([routine_id, exercise_id])
 }
 
 model Training_Log {

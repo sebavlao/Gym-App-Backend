@@ -16,6 +16,19 @@ export class RoutineController {
         return res.status(400).json({ error: 'Faltan campos obligatorios: client_id, coach_id y exercises' });
       }
 
+      if (!Array.isArray(exercises) || exercises.length === 0) {
+        return res.status(400).json({ error: 'El campo exercises debe ser un arreglo con al menos un ejercicio.' });
+      }
+
+      // 🔥 VALIDACIÓN CRÍTICA: Aseguramos que el profesor mande la dosificación de cada ejercicio
+      for (const item of exercises) {
+        if (!item.exercise_id || item.series === undefined || !item.repetitions || item.order === undefined) {
+          return res.status(400).json({ 
+            error: 'Cada ejercicio debe incluir obligatoriamente: exercise_id, series, repetitions y order.' 
+          });
+        }
+      }
+
       const newRoutine = await this.createRoutineUseCase.execute({
         client_id,
         coach_id,

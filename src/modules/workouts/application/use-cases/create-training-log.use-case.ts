@@ -1,5 +1,4 @@
-import type { TrainingLogRepository } from '../../modules/trainings/domain/training-log.repository.js';
-import type { Training_Log } from '../../generated/prisma/client/client.js';
+import type { TrainingLogRepository } from '../../domain/repositories/ITrainingLogRepository.js';
 
 interface CreateTrainingLogInput {
   client_id: string;
@@ -12,7 +11,8 @@ interface CreateTrainingLogInput {
 export class CreateTrainingLogUseCase {
   constructor(private trainingLogRepository: TrainingLogRepository) {}
 
-  async execute(input: CreateTrainingLogInput): Promise<Training_Log> {
+  // 🛠️ Cambiamos el retorno a Promise<any> para que acepte el mapeo del repositorio
+  async execute(input: CreateTrainingLogInput): Promise<any> {
     if (!input.client_id || !input.routine_exercise_id) {
       throw new Error('Faltan datos clave: client_id o routine_exercise_id.');
     }
