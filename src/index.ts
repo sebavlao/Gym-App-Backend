@@ -10,6 +10,7 @@ import { trainingLogRoutes } from './modules/workouts/infrastructure/routes/trai
 import { gymRoutes } from './modules/gyms/infrastructure/routes/gym.routes.js';
 import MembershipRoutes from './modules/gyms/infrastructure/routes/Membership.routes.js';
 import userRoutes from './modules/users/infrastructure/routes/user.routes.js';
+import billingRoutes from './modules/billing/infrastructure/routes/billing.routes.js';
 
 const connectionString = process.env.DATABASE_URL!;
 
@@ -27,6 +28,7 @@ app.use('/gyms', gymRoutes);
 app.use('/memberships', MembershipRoutes);
 app.use('/routines', routineRoutes);
 app.use('/training-logs', trainingLogRoutes);
+app.use('/billing', billingRoutes);
 
 async function startServer() {
   try {
