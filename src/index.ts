@@ -11,6 +11,7 @@ import { gymRoutes } from './modules/gyms/infrastructure/routes/gym.routes.js';
 import MembershipRoutes from './modules/gyms/infrastructure/routes/Membership.routes.js';
 import userRoutes from './modules/users/infrastructure/routes/user.routes.js';
 import billingRoutes from './modules/billing/infrastructure/routes/billing.routes.js';
+import nutritionRoutes from './modules/users/infrastructure/routes/nutrition.routes.js'; 
 
 const connectionString = process.env.DATABASE_URL!;
 
@@ -29,6 +30,7 @@ app.use('/memberships', MembershipRoutes);
 app.use('/routines', routineRoutes);
 app.use('/training-logs', trainingLogRoutes);
 app.use('/billing', billingRoutes);
+app.use('/nutrition', nutritionRoutes); // <-- Registramos el módulo de Cami
 
 async function startServer() {
   try {

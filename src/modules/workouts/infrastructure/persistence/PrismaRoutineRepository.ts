@@ -1,54 +1,88 @@
-import type { RoutineRepository, RoutineWithExercises } from '../../domain/repositories/IRoutineRepository.js';
-import type { Routine } from '../../../../generated/prisma/client/client.js';
-// Usamos el prisma global que ya tiene el adaptador configurado en el index
-import { prisma } from '../../../../index.js';
+import { PrismaClient } from '../../../../generated/prisma/client/client.js';
+import type { RoutineRepository } from '../../domain/repositories/IRoutineRepository.js';
+import { Routine } from '../../domain/entities/Routine.js';
+import { RoutineMapper } from './RoutineMapper.js';
 
 export class PrismaRoutineRepository implements RoutineRepository {
-  async create(data: {
-    client_id: string;
-    coach_id: string;
-    exercises: {
-      exercise_id: string;
-      series: number;
-      repetitions: string;
-      rest_time?: number | null;
-      order: number;
-    }[];
-  }): Promise<Routine> {
-    // Usamos create de Prisma mapeando todas las propiedades de la dosificación
-    return prisma.routine.create({
-      data: {
-        client_id: data.client_id,
-        coach_id: data.coach_id,
-        routineExercises: {
-          create: data.exercises.map((ex) => ({
-            exercise_id: ex.exercise_id,
-            series: ex.series,
-            repetitions: ex.repetitions,
-            rest_time: ex.rest_time ?? null,
-            order: ex.order,
-          })),
-        },
-      },
-      include: {
-        routineExercises: true
-      }
-    }) as unknown as Routine;
+  constructor(private prisma: PrismaClient) {}
+
+  async save(routine: Routine): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Borrado preventivo: Si la rutina ya existe, la limpiamos para evitar duplicados en actualizaciones
+      await tx.routine.deleteMany({
+        where: { id: routine.id }
+      });
+
+      // 2. Inserción en Cascada de la nueva estructura
+      await tx.routine.create({
+        data: {
+          id: routine.id,
+          client_id: routine.clientId,
+          coach_id: routine.coachId,
+          title: routine.title,
+          description: routine.description,
+          created_at: routine.createdAt,
+          end_date: routine.endDate,
+          days: {
+            create: routine.days.map(day => ({
+              id: day.id,
+              name: day.name,
+              order: day.order,
+              exercises: {
+                create: day.exercises.map(ex => ({
+                  id: ex.id,
+                  exercise_id: ex.exerciseId,
+                  series: ex.series,
+                  repetitions: ex.repetitions,
+                  rest_time: ex.restTime,
+                  order: ex.order
+                }))
+              }
+            }))
+          }
+        }
+      });
+    });
   }
 
-  async findByClientId(client_id: string): Promise<RoutineWithExercises[]> {
-    // Traemos las rutinas del alumno incluyendo los datos de los ejercicios vinculados
-    const routines = await prisma.routine.findMany({
-      where: { client_id },
+  async findById(id: string): Promise<Routine | null> {
+    const raw = await this.prisma.routine.findUnique({
+      where: { id },
       include: {
-        routineExercises: {
+        days: {
+          orderBy: { order: 'asc' },
           include: {
-            exercise: true,
-          },
-        },
-      },
+            exercises: {
+              orderBy: { order: 'asc' }
+            }
+          }
+        }
+      }
     });
+    return raw ? RoutineMapper.toDomain(raw) : null;
+  }
 
-    return routines as RoutineWithExercises[];
+  async findByClientId(clientId: string): Promise<Routine[]> {
+    const raws = await this.prisma.routine.findMany({
+      where: { client_id: clientId },
+      include: {
+        days: {
+          orderBy: { order: 'asc' },
+          include: {
+            exercises: {
+              orderBy: { order: 'asc' }
+            }
+          }
+        }
+      },
+      orderBy: { created_at: 'desc' }
+    });
+    return raws.map(RoutineMapper.toDomain);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.routine.delete({
+      where: { id }
+    });
   }
 }

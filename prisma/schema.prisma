@@ -26,13 +26,11 @@ model User {
   clientDetail Client_Detail?
   coachDetail  Coach_Detail?
 
-  // RELACIONES DE MEMBRESÍA (Corregido)
-  // Membresías que el usuario "compra" como cliente
-  memberships        Membership[] @relation("UserMemberships")
-  // Membresías donde este usuario es el coach asignado
+  // RELACIONES DE MEMBRESÍA
+  memberships         Membership[] @relation("UserMemberships")
   membershipsAsCoach Membership[] @relation("CoachAssignment")
 
-  // Otras relaciones existentes
+  // Relaciones de entrenamiento y nutrición
   routinesAsClient Routine[]      @relation("ClientRoutines")
   routinesAsCoach  Routine[]      @relation("CoachRoutines")
   sentMessages     Chat_Message[] @relation("SentMessages")
@@ -74,14 +72,12 @@ model Gym {
 model Membership {
   id String @id @default(uuid())
 
-  // Relación con el Cliente (Dueño de la membresía)
   user_id String
   user    User   @relation("UserMemberships", fields: [user_id], references: [id])
 
   gym_id String
   gym    Gym    @relation(fields: [gym_id], references: [id])
 
-  // Relación con el Coach asignado (Corregido)
   coach_id String?
   coach    User?   @relation("CoachAssignment", fields: [coach_id], references: [id])
 
@@ -99,44 +95,54 @@ model Physical_Profile {
 }
 
 model Exercise {
-  id               String            @id @default(uuid())
-  name             String
-  muscle_group     String
-  media_url        String?
+  id           String @id @default(uuid())
+  name         String
+  muscle_group String
+  media_url    String?
   
-  // FIX PARA SAAS: Si es null, es un ejercicio global del sistema. Si tiene ID, es exclusivo de ese gimnasio.
-  gym_id           String?
-  is_custom        Boolean           @default(false)
+  gym_id       String?
+  is_custom    Boolean @default(false)
   
   routineExercises Routine_Exercise[]
 }
 
 model Routine {
-  id               String             @id @default(uuid())
-  client_id        String
-  client           User               @relation("ClientRoutines", fields: [client_id], references: [id])
-  coach_id         String
-  coach            User               @relation("CoachRoutines", fields: [coach_id], references: [id])
-  routineExercises Routine_Exercise[]
+  id          String        @id @default(uuid())
+  client_id   String
+  client      User          @relation("ClientRoutines", fields: [client_id], references: [id])
+  coach_id    String
+  coach       User          @relation("CoachRoutines", fields: [coach_id], references: [id])
+  title       String        // Ej: "Rutina PPL Hipertrofia"
+  description String?       // Notas generales
+  created_at  DateTime      @default(now())
+  end_date    DateTime?     // Fecha estimada de cambio de rutina
+  days        Routine_Day[] // Relación con los bloques de días
+}
+
+model Routine_Day {
+  id         String             @id @default(uuid())
+  routine_id String
+  routine    Routine            @relation(fields: [routine_id], references: [id], onDelete: Cascade)
+  name       String             // Ej: "Día 1 - Empuje (Push)", "Día A"
+  order      Int                // Orden cronológico (1, 2, 3...)
+  exercises  Routine_Exercise[]
 }
 
 model Routine_Exercise {
-  id           String         @id @default(uuid())
-  routine_id   String
-  routine      Routine        @relation(fields: [routine_id], references: [id], onDelete: Cascade)
-  exercise_id  String
-  exercise     Exercise       @relation(fields: [exercise_id], references: [id])
+  id             String       @id @default(uuid())
+  routine_day_id String
+  routineDay     Routine_Day  @relation(fields: [routine_day_id], references: [id], onDelete: Cascade)
+  exercise_id    String
+  exercise       Exercise     @relation(fields: [exercise_id], references: [id])
   
-  // 🔥 FIX CRÍTICO: Los "numeritos" que setea el profesor desde el panel
-  series       Int            // Ej: 4
-  repetitions  String         // Lo dejamos String para admitir variantes como "12", "10-12" o "Al fallo"
-  rest_time    Int?           // Tiempo de descanso en segundos (opcional)
-  order        Int            // Para ordenar los ejercicios en la interfaz (1º, 2º, 3º...) 
+  series         Int
+  repetitions    String       // Permite cosas como "12", "10-12" o "Al fallo"
+  rest_time      Int?         // En segundos
+  order          Int          // Orden de ejecución dentro de ese día (1º, 2º...) 
 
-  trainingLogs Training_Log[]
+  trainingLogs   Training_Log[]
 
-  // Restricción para evitar asignar el mismo ejercicio dos veces dentro de la misma rutina
-  @@unique([routine_id, exercise_id])
+  @@unique([routine_day_id, exercise_id]) // No repetir ejercicio el mismo día
 }
 
 model Training_Log {
@@ -148,12 +154,40 @@ model Training_Log {
   weight_used         Float
   actual_reps         Int
   calories_burned     Float?
+  recorded_at         DateTime         @default(now())
 }
 
 model Meal_Plan {
-  id        String @id @default(uuid())
-  client_id String
-  client    User   @relation(fields: [client_id], references: [id])
+  id          String    @id @default(uuid())
+  client_id   String
+  client      User      @relation(fields: [client_id], references: [id])
+  coach_id    String
+  title       String
+  description String?
+  meals       Meal[]
+  created_at  DateTime  @default(now())
+  end_date    DateTime
+}
+
+model Meal {
+  id           String     @id @default(uuid())
+  meal_plan_id String
+  mealPlan     Meal_Plan  @relation(fields: [meal_plan_id], references: [id], onDelete: Cascade)
+  name         String
+  order        Int
+  items        Meal_Item[]
+}
+
+model Meal_Item {
+  id           String   @id @default(uuid())
+  meal_id      String
+  meal         Meal     @relation(fields: [meal_id], references: [id], onDelete: Cascade)
+  food_name    String
+  quantity     String
+  protein      Float
+  carbs        Float
+  fats         Float
+  alternatives String?
 }
 
 model Chat_Message {
