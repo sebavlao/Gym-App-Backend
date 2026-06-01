@@ -67,6 +67,7 @@ model Gym {
   name        String
   address     String
   memberships Membership[]
+  coupons     Coupon[]
 }
 
 model Membership {
@@ -198,4 +199,30 @@ model Chat_Message {
   receiver    User     @relation("ReceivedMessages", fields: [receiver_id], references: [id])
   content     String
   sent_at     DateTime @default(now())
+}
+
+model Partner {
+  id         String   @id @default(uuid())
+  name       String
+  category   String
+  logo_url   String?
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  coupons    Coupon[]
+}
+
+model Coupon {
+  id                  String   @id @default(uuid())
+  partner_id          String
+  partner             Partner  @relation(fields: [partner_id], references: [id], onDelete: Cascade)
+  
+  gym_id              String?  // Nulo si el beneficio es de la red global, con ID si es local
+  gym                 Gym?     @relation(fields: [gym_id], references: [id], onDelete: SetNull)
+  
+  code                String   @unique
+  description         String
+  discount_percentage Int
+  expiration_date     DateTime
+  is_active           Boolean  @default(true)
+  created_at          DateTime @default(now())
 }
