@@ -1,7 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Prisma schema file
 
 generator client {
   provider = "prisma-client"
@@ -18,28 +15,56 @@ enum Role {
   Client
 }
 
+enum GymRoleType {
+  GYM_ADMIN
+  COACH
+  CLIENT
+}
+
+enum FeeStatus {
+  PENDING
+  PAID
+  WAIVED
+}
+
+enum AttendanceSource {
+  MANUAL
+  QR_SCAN
+}
+
 model User {
-  id               String            @id @default(uuid())
-  email            String            @unique
-  role             Role
-  qr_code          String?
-  
-  // Relations
-  clientDetail     Client_Detail?
-  coachDetail      Coach_Detail?
-  memberships      Membership[]
-  routinesAsClient Routine[]         @relation("ClientRoutines")
-  routinesAsCoach  Routine[]         @relation("CoachRoutines")
-  sentMessages     Chat_Message[]    @relation("SentMessages")
-  receivedMessages Chat_Message[]    @relation("ReceivedMessages")
+  id         String  @id @default(uuid())
+  email      String  @unique
+  password   String
+  role       Role    @default(Client)
+  first_name String
+  last_name  String
+  phone      String?
+  qr_code    String?
+
+  // Detalles específicos según el rol
+  clientDetail Client_Detail?
+  coachDetail  Coach_Detail?
+
+  // RELACIONES DE MEMBRESÍA
+  memberships         Membership[] @relation("UserMemberships")
+  membershipsAsCoach Membership[] @relation("CoachAssignment")
+
+  // Roles contextuales por gimnasio
+  gymRoles GymRole[]
+
+  // Relaciones de entrenamiento y nutrición
+  routinesAsClient Routine[]      @relation("ClientRoutines")
+  routinesAsCoach  Routine[]      @relation("CoachRoutines")
+  sentMessages     Chat_Message[] @relation("SentMessages")
+  receivedMessages Chat_Message[] @relation("ReceivedMessages")
   logAsClient      Training_Log[]
   mealPlans        Meal_Plan[]
+  attendance       Attendance[]
+  attendanceRecorded Attendance[] @relation("RecordedBy")
 
-  // Constraint: Un User solo puede tener un Client_Detail o un Coach_Detail.
-  // Nota: Dado que Prisma no soporta XOR constraints nativos a nivel de DB 
-  // (CHECK constraints inter-tablas o de multiples columnas condicionales fácilmente),
-  // se debe asegurar esto en la capa de Aplicación (Application Layer/Domain) 
-  // o agregando un simple trigger / CHECK en SQL Raw en la migración.
+  // Fee management
+  membershipFees MembershipFee[]
 }
 
 model Client_Detail {
@@ -55,15 +80,14 @@ model Client_Detail {
 }
 
 model Coach_Detail {
-  id                String       @id @default(uuid())
-  user_id           String       @unique
-  user              User         @relation(fields: [user_id], references: [id])
+  id                String  @id @default(uuid())
+  user_id           String  @unique
+  user              User    @relation(fields: [user_id], references: [id])
   blood_type        String?
   pathologies       String?
   allergies         String?
   observations      String?
   emergency_contact String?
-  memberships       Membership[]
 }
 
 model Gym {
@@ -71,17 +95,83 @@ model Gym {
   name        String
   address     String
   memberships Membership[]
+  gymRoles    GymRole[]
+  coupons     Coupon[]
+  attendance  Attendance[]
 }
 
 model Membership {
-  id           String            @id @default(uuid())
-  user_id      String
-  user         User              @relation(fields: [user_id], references: [id])
-  gym_id       String
-  gym          Gym               @relation(fields: [gym_id], references: [id])
-  coach_id     String?
-  coach        Coach_Detail?     @relation(fields: [coach_id], references: [id])
-  status       String
+  id String @id @default(uuid())
+
+  user_id String
+  user    User   @relation("UserMemberships", fields: [user_id], references: [id])
+
+  gym_id String
+  gym    Gym    @relation(fields: [gym_id], references: [id])
+
+  coach_id String?
+  coach    User?   @relation("CoachAssignment", fields: [coach_id], references: [id])
+
+  status String
+
+  fees  MembershipFee[]
+  attendance Attendance[]
+
+  @@unique([user_id, gym_id])
+}
+
+model MembershipFee {
+  id            String    @id @default(uuid())
+  membership_id String
+  membership    Membership @relation(fields: [membership_id], references: [id], onDelete: Cascade)
+  user_id       String
+  user          User      @relation(fields: [user_id], references: [id])
+
+  period        String    // Ej: "2026-08"
+  amount        Float
+  currency      String    @default("UYU")
+  status        FeeStatus @default(PENDING)
+  due_date      DateTime
+  paid_at       DateTime?
+  notes         String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([membership_id, period])
+}
+
+model Attendance {
+  id            String    @id @default(uuid())
+  membership_id String
+  membership    Membership @relation(fields: [membership_id], references: [id], onDelete: Cascade)
+  user_id       String
+  user          User      @relation(fields: [user_id], references: [id])
+  gym_id        String
+  gym           Gym       @relation(fields: [gym_id], references: [id])
+
+  attendance_date DateTime
+  checked_in_at   DateTime  @default(now())
+  recorded_by_user_id String?
+  recorded_by_user    User?   @relation("RecordedBy", fields: [recorded_by_user_id], references: [id])
+  source        AttendanceSource @default(MANUAL)
+
+  created_at DateTime @default(now())
+
+  @@unique([user_id, gym_id, attendance_date])
+}
+
+model GymRole {
+  id      String      @id @default(uuid())
+  user_id String
+  user    User        @relation(fields: [user_id], references: [id])
+  gym_id  String
+  gym     Gym         @relation(fields: [gym_id], references: [id])
+  role    GymRoleType
+
+  created_at DateTime @default(now())
+
+  @@unique([user_id, gym_id, role])
 }
 
 model Physical_Profile {
@@ -95,29 +185,54 @@ model Physical_Profile {
 }
 
 model Exercise {
-  id               String             @id @default(uuid())
-  name             String
-  muscle_group     String
-  media_url        String?
+  id           String @id @default(uuid())
+  name         String
+  muscle_group String
+  media_url    String?
+  
+  gym_id       String?
+  is_custom    Boolean @default(false)
+  
   routineExercises Routine_Exercise[]
 }
 
 model Routine {
-  id               String             @id @default(uuid())
-  client_id        String
-  client           User               @relation("ClientRoutines", fields: [client_id], references: [id])
-  coach_id         String
-  coach            User               @relation("CoachRoutines", fields: [coach_id], references: [id])
-  routineExercises Routine_Exercise[]
+  id          String        @id @default(uuid())
+  client_id   String
+  client      User          @relation("ClientRoutines", fields: [client_id], references: [id])
+  coach_id    String
+  coach       User          @relation("CoachRoutines", fields: [coach_id], references: [id])
+  title       String        // Ej: "Rutina PPL Hipertrofia"
+  description String?       // Notas generales
+  created_at  DateTime      @default(now())
+  end_date    DateTime?     // Fecha estimada de cambio de rutina
+  days        Routine_Day[] // Relación con los bloques de días
+}
+
+model Routine_Day {
+  id         String             @id @default(uuid())
+  routine_id String
+  routine    Routine            @relation(fields: [routine_id], references: [id], onDelete: Cascade)
+  name       String             // Ej: "Día 1 - Empuje (Push)", "Día A"
+  order      Int                // Orden cronológico (1, 2, 3...)
+  exercises  Routine_Exercise[]
 }
 
 model Routine_Exercise {
-  id           String         @id @default(uuid())
-  routine_id   String
-  routine      Routine        @relation(fields: [routine_id], references: [id])
-  exercise_id  String
-  exercise     Exercise       @relation(fields: [exercise_id], references: [id])
-  trainingLogs Training_Log[]
+  id             String       @id @default(uuid())
+  routine_day_id String
+  routineDay     Routine_Day  @relation(fields: [routine_day_id], references: [id], onDelete: Cascade)
+  exercise_id    String
+  exercise       Exercise     @relation(fields: [exercise_id], references: [id])
+  
+  series         Int
+  repetitions    String       // Permite cosas como "12", "10-12" o "Al fallo"
+  rest_time      Int?         // En segundos
+  order          Int          // Orden de ejecución dentro de ese día (1º, 2º...) 
+
+  trainingLogs   Training_Log[]
+
+  @@unique([routine_day_id, exercise_id]) // No repetir ejercicio el mismo día
 }
 
 model Training_Log {
@@ -129,12 +244,40 @@ model Training_Log {
   weight_used         Float
   actual_reps         Int
   calories_burned     Float?
+  recorded_at         DateTime         @default(now())
 }
 
 model Meal_Plan {
-  id        String @id @default(uuid())
-  client_id String
-  client    User   @relation(fields: [client_id], references: [id])
+  id          String    @id @default(uuid())
+  client_id   String
+  client      User      @relation(fields: [client_id], references: [id])
+  coach_id    String
+  title       String
+  description String?
+  meals       Meal[]
+  created_at  DateTime  @default(now())
+  end_date    DateTime
+}
+
+model Meal {
+  id           String     @id @default(uuid())
+  meal_plan_id String
+  mealPlan     Meal_Plan  @relation(fields: [meal_plan_id], references: [id], onDelete: Cascade)
+  name         String
+  order        Int
+  items        Meal_Item[]
+}
+
+model Meal_Item {
+  id           String   @id @default(uuid())
+  meal_id      String
+  meal         Meal     @relation(fields: [meal_id], references: [id], onDelete: Cascade)
+  food_name    String
+  quantity     String
+  protein      Float
+  carbs        Float
+  fats         Float
+  alternatives String?
 }
 
 model Chat_Message {
@@ -145,4 +288,30 @@ model Chat_Message {
   receiver    User     @relation("ReceivedMessages", fields: [receiver_id], references: [id])
   content     String
   sent_at     DateTime @default(now())
+}
+
+model Partner {
+  id         String   @id @default(uuid())
+  name       String
+  category   String
+  logo_url   String?
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  coupons    Coupon[]
+}
+
+model Coupon {
+  id                  String   @id @default(uuid())
+  partner_id          String
+  partner             Partner  @relation(fields: [partner_id], references: [id], onDelete: Cascade)
+  
+  gym_id              String?  // Nulo si el beneficio es de la red global, con ID si es local
+  gym                 Gym?     @relation(fields: [gym_id], references: [id], onDelete: SetNull)
+  
+  code                String   @unique
+  description         String
+  discount_percentage Int
+  expiration_date     DateTime
+  is_active           Boolean  @default(true)
+  created_at          DateTime @default(now())
 }

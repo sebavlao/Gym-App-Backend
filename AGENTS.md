@@ -30,7 +30,7 @@ Cada módulo debe contener las siguientes capas:
 ## 📏 Reglas de Desarrollo
 
 - **Política de Idioma:** TODO el código (clases, funciones, variables) así como los nombres de archivos y carpetas deben escribirse estrictamente en **Inglés**; los comentarios y la documentación interna deben estar en **Español**.
-- **Mapeo de Conceptos:** Tomar de ejemplo a la hora de mapear conceptos
+- **Mapeo de Conceptos:** Tomar de ejemplo a la hora de mapear conceptos (ESTO SIRVE DE EJEMPLO PARA MAPEAR LOS CONCEPTOS, NO QUIERE NI TAMPOCO DEFINE LA CANTIDAD DE MODULOS A CREAR)
   - Usuario -> `User` | Profesor -> `Coach` | Gimnasio -> `Gym` | Sede -> `Branch` | Plan -> `WorkoutPlan`
 - **Regla de Dependencias:** Las dependencias siempre apuntan hacia adentro. Infrastructure -> Application -> Domain.
 - **Desacoplamiento de Persistencia:** Las entidades de dominio son independientes de los modelos de Prisma. Es OBLIGATORIO usar Mappers en la capa de infraestructura.

@@ -5,36 +5,51 @@
   "main": "./src/index.ts",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "studio": "pnpm exec prisma studio"
+    "studio": "prisma studio",
+    "bootstrap:tenant": "tsx src/scripts/bootstrap-tenant.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.25.0",
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/supertest": "^7.2.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "eslint": ">=10",
     "eslint-config-prettier": "^10.1.8",
+    "msw": "^2.13.5",
     "prettier": "^3.8.3",
     "prisma": "^7.7.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.21.0",
     "typescript": ">=5.9.0",
-    "typescript-eslint": "^8.58.2"
+    "typescript-eslint": "^8.58.2",
+    "vitest": "^4.1.5"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "pg": "^8.20.0"
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0",
+    "qrcode": "^1.5.4",
+    "zod": "^4.4.3"
   }
 }
