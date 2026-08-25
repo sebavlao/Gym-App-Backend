@@ -33,6 +33,7 @@ const controller = new UserController(
   loginUserUseCase,
   getUserProfileUseCase,
   getUserGymsUseCase,
+  userRepository,
 );
 
 // Públicas
@@ -42,5 +43,6 @@ router.post('/login', (req, res) => controller.login(req, res));
 // Protegidas
 router.get('/me', authenticate, (req, res) => controller.me(req, res));
 router.get('/me/gyms', authenticate, (req, res) => controller.meGyms(req, res));
+router.post('/change-password', authenticate, (req, res) => controller.changePassword(req, res));
 
 export default router;

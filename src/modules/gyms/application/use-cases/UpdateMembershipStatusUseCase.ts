@@ -3,28 +3,40 @@ import { MembershipStatus } from '../../domain/entities/Membership';
 
 export interface UpdateMembershipStatusCommand {
   membershipId: string;
-  status: MembershipStatus;
+  gymId: string;
+  status: 'active' | 'inactive' | 'pending';
 }
 
 export class UpdateMembershipStatusUseCase {
-  constructor(private readonly membershipRepository: IMembershipRepository) {}
+  constructor(
+    private readonly membershipRepository: IMembershipRepository,
+  ) {}
 
   async execute(command: UpdateMembershipStatusCommand): Promise<void> {
-    const membership = await this.membershipRepository.findById(
-      command.membershipId,
-    );
+    const membership = await this.membershipRepository.findById(command.membershipId);
+    
     if (!membership) {
-      throw new Error('Membership not found');
+      throw new Error('Membresía no encontrada');
     }
-
-    if (command.status === MembershipStatus.Active) {
-      membership.activate();
-    } else if (command.status === MembershipStatus.Inactive) {
-      membership.deactivate();
-    } else {
-      throw new Error('Can only transition to active or inactive explicitly');
+    
+    if (membership.gymId !== command.gymId) {
+      throw new Error('La membresía no pertenece a este gimnasio');
     }
-
+    
+    // Actualizar estado
+    switch (command.status) {
+      case 'active':
+        membership.activate();
+        break;
+      case 'inactive':
+        membership.deactivate();
+        break;
+      case 'pending':
+        // Para pending, necesitamos un método o asignación directa
+        (membership as any).status = MembershipStatus.Pending;
+        break;
+    }
+    
     await this.membershipRepository.update(membership);
   }
 }

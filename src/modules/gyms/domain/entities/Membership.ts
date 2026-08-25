@@ -43,6 +43,7 @@ export class Membership {
   get userId(): string { return this.props.userId; }
   get gymId(): string { return this.props.gymId; }
   get coachId(): string | null | undefined { return this.props.coachId; }
+  set coachId(value: string | null | undefined) { this.props.coachId = value; }
   get status(): MembershipStatus { return this.props.status; }
   get userDetails(): any { return this.props.userDetails; } // Getter expuesto
 }

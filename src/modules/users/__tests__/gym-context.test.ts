@@ -52,7 +52,7 @@ describe('GetUserGymsUseCase', () => {
   it('devuelve solo gyms del usuario autenticado', async () => {
     const repo: IGymRoleRepository = {
       findGymsByUserId: vi.fn().mockResolvedValue([
-        makeGymRole('gym-1', 'Gym Patán', ['CLIENT']),
+        makeGymRole('gym-1', 'Gym A', ['CLIENT']),
       ]),
       findRolesByUserAndGym: vi.fn(),
       create: vi.fn(),
@@ -63,7 +63,7 @@ describe('GetUserGymsUseCase', () => {
 
     expect(result).toHaveLength(1);
     expect(result[0].gymId).toBe('gym-1');
-    expect(result[0].gym.name).toBe('Gym Patán');
+    expect(result[0].gym.name).toBe('Gym A');
     expect(result[0].roles).toEqual(['CLIENT']);
     expect(repo.findGymsByUserId).toHaveBeenCalledWith('user-1');
   });

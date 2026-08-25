@@ -116,6 +116,8 @@ describe('Membership — Aislamiento cross-gym', () => {
       { execute: vi.fn() } as any,
       { execute: vi.fn() } as any,
       { execute: vi.fn() } as any,
+      { execute: vi.fn() } as any,
+      { execute: vi.fn() } as any,
       membershipRepo,
       gymRoleRepo,
     );
@@ -168,6 +170,8 @@ describe('Membership — Aislamiento cross-gym', () => {
     const createUseCase = { execute: vi.fn() };
     const ctrl = new MembershipController(
       createUseCase as any,
+      { execute: vi.fn() } as any,
+      { execute: vi.fn() } as any,
       { execute: vi.fn() } as any,
       { execute: vi.fn() } as any,
       membershipRepo,

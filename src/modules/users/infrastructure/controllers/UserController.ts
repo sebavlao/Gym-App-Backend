@@ -4,6 +4,8 @@ import { LoginUserUseCase } from '../../application/use-cases/auth/LoginUserUseC
 import { GetUserProfileUseCase } from '../../application/use-cases/users/GetUserProfileUseCase.js';
 import { GetUserGymsUseCase } from '../../application/use-cases/users/GetUserGymsUseCase.js';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/middleware/authenticate.js';
+import { BcryptHasher } from '../../../../shared/infrastructure/cryptography/BcryptHasher.js';
+import type { IUserRepository } from '../../domain/repositories/IUserRepository.js';
 import { randomUUID } from 'crypto';
 
 export class UserController {
@@ -12,6 +14,7 @@ export class UserController {
     private loginUserUseCase: LoginUserUseCase,
     private getUserProfileUseCase: GetUserProfileUseCase,
     private getUserGymsUseCase: GetUserGymsUseCase,
+    private userRepository: IUserRepository,
   ) {}
 
   async register(req: Request, res: Response) {
@@ -19,7 +22,9 @@ export class UserController {
       const { 
         email, 
         password, 
-        role, 
+        firstName,
+        lastName,
+        phone,
         bloodType, 
         pathologies, 
         allergies, 
@@ -27,21 +32,9 @@ export class UserController {
         observations 
       } = req.body;
 
-      if (!email || !password || !role) {
+      if (!email || !password || !firstName || !lastName) {
         return res.status(400).json({ 
-          error: 'Faltan campos obligatorios: email, password y role' 
-        });
-      }
-
-      if (role !== 'Client') {
-        return res.status(403).json({ 
-          error: 'El registro público solo permite crear cuentas de alumno (Client)' 
-        });
-      }
-
-      if (!bloodType || !pathologies || !emergencyContact) {
-        return res.status(400).json({ 
-          error: 'Faltan campos médicos obligatorios: bloodType, pathologies, emergencyContact' 
+          error: 'Faltan campos obligatorios: email, password, firstName y lastName' 
         });
       }
 
@@ -49,7 +42,10 @@ export class UserController {
         id: randomUUID(),
         email,
         passwordRaw: password,
-        role,
+        role: 'Client' as any,
+        firstName,
+        lastName,
+        phone,
         bloodType,
         pathologies,
         allergies,
@@ -95,6 +91,9 @@ export class UserController {
       res.status(200).json({
         id: user.id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
       });
     } catch (error: any) {
       if (error.code === 'USER_NOT_FOUND') {
@@ -113,6 +112,47 @@ export class UserController {
     } catch (error: any) {
       console.error('🔴 ERROR EN ME/GYMS:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  async changePassword(req: Request, res: Response) {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ 
+          error: 'Faltan campos obligatorios: currentPassword y newPassword' 
+        });
+      }
+
+      if (newPassword.length < 8) {
+        return res.status(400).json({ 
+          error: 'La nueva contraseña debe tener al menos 8 caracteres' 
+        });
+      }
+
+      const user = await this.getUserProfileUseCase.execute(authReq.userId);
+      
+      if (!user.password) {
+        return res.status(400).json({ error: 'Usuario no encontrado' });
+      }
+
+      const hasher = new BcryptHasher();
+      const isValid = await hasher.compare(currentPassword, user.password);
+      
+      if (!isValid) {
+        return res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+      }
+
+      const hashedNewPassword = await hasher.hash(newPassword);
+      user.setPassword(hashedNewPassword);
+      await this.userRepository.update(user);
+
+      res.status(200).json({ message: 'Contraseña actualizada con éxito' });
+    } catch (error: any) {
+      console.error('🔴 ERROR EN CHANGE PASSWORD:', error);
+      res.status(500).json({ error: error.message || 'Error al cambiar la contraseña' });
     }
   }
 }

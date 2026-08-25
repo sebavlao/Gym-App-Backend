@@ -21,12 +21,26 @@ enum GymRoleType {
   CLIENT
 }
 
+enum FeeStatus {
+  PENDING
+  PAID
+  WAIVED
+}
+
+enum AttendanceSource {
+  MANUAL
+  QR_SCAN
+}
+
 model User {
-  id       String  @id @default(uuid())
-  email    String  @unique
-  password String
-  role     Role
-  qr_code  String?
+  id         String  @id @default(uuid())
+  email      String  @unique
+  password   String
+  role       Role    @default(Client)
+  first_name String
+  last_name  String
+  phone      String?
+  qr_code    String?
 
   // Detalles específicos según el rol
   clientDetail Client_Detail?
@@ -46,6 +60,11 @@ model User {
   receivedMessages Chat_Message[] @relation("ReceivedMessages")
   logAsClient      Training_Log[]
   mealPlans        Meal_Plan[]
+  attendance       Attendance[]
+  attendanceRecorded Attendance[] @relation("RecordedBy")
+
+  // Fee management
+  membershipFees MembershipFee[]
 }
 
 model Client_Detail {
@@ -78,6 +97,7 @@ model Gym {
   memberships Membership[]
   gymRoles    GymRole[]
   coupons     Coupon[]
+  attendance  Attendance[]
 }
 
 model Membership {
@@ -94,7 +114,51 @@ model Membership {
 
   status String
 
+  fees  MembershipFee[]
+  attendance Attendance[]
+
   @@unique([user_id, gym_id])
+}
+
+model MembershipFee {
+  id            String    @id @default(uuid())
+  membership_id String
+  membership    Membership @relation(fields: [membership_id], references: [id], onDelete: Cascade)
+  user_id       String
+  user          User      @relation(fields: [user_id], references: [id])
+
+  period        String    // Ej: "2026-08"
+  amount        Float
+  currency      String    @default("UYU")
+  status        FeeStatus @default(PENDING)
+  due_date      DateTime
+  paid_at       DateTime?
+  notes         String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([membership_id, period])
+}
+
+model Attendance {
+  id            String    @id @default(uuid())
+  membership_id String
+  membership    Membership @relation(fields: [membership_id], references: [id], onDelete: Cascade)
+  user_id       String
+  user          User      @relation(fields: [user_id], references: [id])
+  gym_id        String
+  gym           Gym       @relation(fields: [gym_id], references: [id])
+
+  attendance_date DateTime
+  checked_in_at   DateTime  @default(now())
+  recorded_by_user_id String?
+  recorded_by_user    User?   @relation("RecordedBy", fields: [recorded_by_user_id], references: [id])
+  source        AttendanceSource @default(MANUAL)
+
+  created_at DateTime @default(now())
+
+  @@unique([user_id, gym_id, attendance_date])
 }
 
 model GymRole {

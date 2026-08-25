@@ -26,6 +26,8 @@ function makeFakeUser(overrides?: Partial<{ id: string; email: string; password:
     email: overrides?.email ?? 'test@example.com',
     password: overrides?.password ?? '$2b$10$hashedpassword',
     role: overrides?.role ?? UserRole.Client,
+    firstName: 'Test',
+    lastName: 'User',
   });
 }
 
@@ -54,6 +56,7 @@ describe('LoginUserUseCase', () => {
     const fakeRepo: IUserRepository = {
       findById: vi.fn().mockResolvedValue(fakeUser),
       findByEmail: vi.fn().mockResolvedValue(fakeUser),
+      findUsersByGymAndRole: vi.fn().mockResolvedValue([]),
       save: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -84,6 +87,7 @@ describe('Login — credenciales', () => {
   const fakeRepo: IUserRepository = {
     findById: vi.fn().mockResolvedValue(fakeUser),
     findByEmail: vi.fn().mockResolvedValue(fakeUser),
+    findUsersByGymAndRole: vi.fn().mockResolvedValue([]),
     save: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -125,6 +129,7 @@ describe('Login — credenciales', () => {
     const emptyRepo: IUserRepository = {
       findById: vi.fn().mockResolvedValue(null),
       findByEmail: vi.fn().mockResolvedValue(null),
+      findUsersByGymAndRole: vi.fn().mockResolvedValue([]),
       save: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
@@ -233,6 +238,7 @@ describe('UserController.me', () => {
       mockUseCases.login,
       mockUseCases.profile,
       { execute: vi.fn() } as any,
+      { update: vi.fn() } as any,
     );
 
     const req = mockReq();
@@ -246,6 +252,9 @@ describe('UserController.me', () => {
     expect(res.json).toHaveBeenCalledWith({
       id: 'u-me',
       email: 'me@test.com',
+      firstName: 'Test',
+      lastName: 'User',
+      phone: undefined,
     });
   });
 
@@ -265,6 +274,7 @@ describe('UserController.me', () => {
       mockUseCases.login,
       mockUseCases.profile,
       { execute: vi.fn() } as any,
+      { update: vi.fn() } as any,
     );
 
     // Simular que el body tiene un userId diferente, pero el JWT tiene otro

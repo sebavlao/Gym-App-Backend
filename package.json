@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "bootstrap:tenant": "tsx src/scripts/bootstrap-tenant.ts"
   },
   "keywords": [],
   "author": "",

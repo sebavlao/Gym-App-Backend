@@ -2,6 +2,8 @@ import type { Request, Response } from 'express';
 import { CreateMembershipUseCase } from '../../application/use-cases/CreateMembershipUseCase.js';
 import { GetMembershipQrUseCase } from '../../application/use-cases/GetMembershipQrUseCase.js';
 import { ValidateMembershipUseCase } from '../../application/use-cases/ValidateMembershipUseCase.js';
+import { UpdateMembershipCoachUseCase } from '../../application/use-cases/UpdateMembershipCoachUseCase.js';
+import { UpdateMembershipStatusUseCase } from '../../application/use-cases/UpdateMembershipStatusUseCase.js';
 import type { IMembershipRepository } from '../../domain/repositories/IMembershipRepository.js';
 import type { IGymRoleRepository } from '../../domain/repositories/IGymRoleRepository.js';
 import type { GymScopedRequest } from '../../../../shared/infrastructure/middleware/resolveGymContext.js';
@@ -11,6 +13,8 @@ export class MembershipController {
     private createMembershipUseCase: CreateMembershipUseCase,
     private getMembershipQrUseCase: GetMembershipQrUseCase,
     private validateMembershipUseCase: ValidateMembershipUseCase,
+    private updateMembershipCoachUseCase: UpdateMembershipCoachUseCase,
+    private updateMembershipStatusUseCase: UpdateMembershipStatusUseCase,
     private membershipRepository: IMembershipRepository,
     private gymRoleRepository: IGymRoleRepository,
   ) {}
@@ -113,6 +117,60 @@ export class MembershipController {
     } catch (error: any) {
       console.error('🔴 ERROR EN MEMBERSHIP CONTROLLER (VALIDATE):', error);
       res.status(400).json({ error: error.message || 'Error al validar la membresía' });
+    }
+  }
+
+  async updateCoach(req: Request, res: Response) {
+    try {
+      const scopedReq = req as GymScopedRequest;
+      const gymId = scopedReq.gymContext.gymId;
+      const id = req.params.id as string;
+      const { coach_id } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ error: 'Falta el ID de la membresía' });
+      }
+
+      await this.updateMembershipCoachUseCase.execute({
+        membershipId: id,
+        gymId,
+        coachId: coach_id || null,
+      });
+
+      res.status(200).json({ message: 'Coach actualizado con éxito' });
+    } catch (error: any) {
+      console.error('🔴 ERROR EN MEMBERSHIP CONTROLLER (UPDATE COACH):', error);
+      res.status(400).json({ error: error.message || 'Error al actualizar el coach' });
+    }
+  }
+
+  async updateStatus(req: Request, res: Response) {
+    try {
+      const scopedReq = req as GymScopedRequest;
+      const gymId = scopedReq.gymContext.gymId;
+      const id = req.params.id as string;
+      const { status } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ error: 'Falta el ID de la membresía' });
+      }
+
+      if (!status || !['active', 'inactive', 'pending'].includes(status)) {
+        return res.status(400).json({ 
+          error: 'Estado inválido. Valores permitidos: active, inactive, pending' 
+        });
+      }
+
+      await this.updateMembershipStatusUseCase.execute({
+        membershipId: id,
+        gymId,
+        status,
+      });
+
+      res.status(200).json({ message: 'Estado actualizado con éxito' });
+    } catch (error: any) {
+      console.error('🔴 ERROR EN MEMBERSHIP CONTROLLER (UPDATE STATUS):', error);
+      res.status(400).json({ error: error.message || 'Error al actualizar el estado' });
     }
   }
 }

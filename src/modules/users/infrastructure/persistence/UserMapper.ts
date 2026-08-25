@@ -22,9 +22,9 @@ export class UserMapper {
       clientDetail = ClientDetail.create({
         id: prismaUser.clientDetail.id,
         userId: prismaUser.clientDetail.user_id,
-        bloodType: prismaUser.clientDetail.blood_type || '',
-        pathologies: prismaUser.clientDetail.pathologies || '',
-        emergencyContact: prismaUser.clientDetail.emergency_contact || '',
+        bloodType: prismaUser.clientDetail.blood_type,
+        pathologies: prismaUser.clientDetail.pathologies,
+        emergencyContact: prismaUser.clientDetail.emergency_contact,
         allergies: prismaUser.clientDetail.allergies,
         observations: prismaUser.clientDetail.observations,
       });
@@ -48,6 +48,9 @@ export class UserMapper {
       email: prismaUser.email,
       password: prismaUser.password,
       role: prismaUser.role as UserRole,
+      firstName: prismaUser.first_name,
+      lastName: prismaUser.last_name,
+      phone: prismaUser.phone,
       qrCode: prismaUser.qr_code,
       clientDetail,
       coachDetail,
@@ -60,6 +63,9 @@ export class UserMapper {
       email: user.email,
       password: user.password as string,
       role: user.role,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      phone: user.phone || null,
       qr_code: user.qrCode || '',
     };
   }
