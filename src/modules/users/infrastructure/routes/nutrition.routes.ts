@@ -9,6 +9,7 @@ import { CreateMealPlanUseCase } from '../../application/use-cases/nutrition/Cre
 import { UpdateMealPlanUseCase } from '../../application/use-cases/nutrition/UpdateMealPlanUseCase.js';
 import { NutritionController } from '../controllers/NutritionController.js';
 import { createMealPlanSchema, updateMealPlanSchema } from '../validators/nutrition.schema.js';
+import { authenticate } from '../../../../shared/infrastructure/middleware/authenticate.js';
 
 const router = Router();
 
@@ -24,7 +25,6 @@ const updateMealPlanUseCase = new UpdateMealPlanUseCase(mealPlanRepository);
 
 const controller = new NutritionController(createMealPlanUseCase, updateMealPlanUseCase, mealPlanRepository);
 
-// Middleware genérico interceptor de esquemas de Zod corregido y tipado
 const validateBody = (schema: any) => (req: Request, res: Response, next: NextFunction) => {
   try {
     schema.parse(req.body);
@@ -41,11 +41,32 @@ const validateBody = (schema: any) => (req: Request, res: Response, next: NextFu
   }
 };
 
-// Endpoints protegidos con el escudo de Zod
-router.post('/plan', validateBody(createMealPlanSchema), (req, res) => controller.createPlan(req, res));
-router.put('/plan/:id', validateBody(updateMealPlanSchema), (req, res) => controller.updatePlan(req, res));
-router.get('/client/:clientId', (req, res) => controller.getPlansByClient(req, res));
-router.get('/plan/:id', (req, res) => controller.getPlanById(req, res));
-router.delete('/plan/:id', (req, res) => controller.deletePlan(req, res));
+router.use(authenticate);
+
+router.post('/plan', (_req, res) => {
+  res.status(501).json({
+    error: 'Nutrición no disponible temporalmente. Se requiere sistema de consentimiento profesional y aislamiento por gym que aún no está implementado.',
+  });
+});
+router.put('/plan/:id', (_req, res) => {
+  res.status(501).json({
+    error: 'Nutrición no disponible temporalmente. Se requiere sistema de consentimiento profesional y aislamiento por gym que aún no está implementado.',
+  });
+});
+router.get('/client/:clientId', (_req, res) => {
+  res.status(501).json({
+    error: 'Nutrición no disponible temporalmente. Se requiere sistema de consentimiento profesional y aislamiento por gym que aún no está implementado.',
+  });
+});
+router.get('/plan/:id', (_req, res) => {
+  res.status(501).json({
+    error: 'Nutrición no disponible temporalmente. Se requiere sistema de consentimiento profesional y aislamiento por gym que aún no está implementado.',
+  });
+});
+router.delete('/plan/:id', (_req, res) => {
+  res.status(501).json({
+    error: 'Nutrición no disponible temporalmente. Se requiere sistema de consentimiento profesional y aislamiento por gym que aún no está implementado.',
+  });
+});
 
 export default router;

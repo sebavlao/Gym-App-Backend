@@ -1,4 +1,4 @@
-import type { Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import type { AuthenticatedRequest } from './authenticate.js';
 import type { IGymRoleRepository } from '../../../modules/gyms/domain/repositories/IGymRoleRepository.js';
 
@@ -12,18 +12,21 @@ export interface GymScopedRequest extends AuthenticatedRequest {
 }
 
 export function resolveGymContext(gymRoleRepository: IGymRoleRepository) {
-  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const authReq = req as AuthenticatedRequest;
     const gymId = req.headers['x-gym-id'] as string | undefined;
 
     if (!gymId) {
-      return res.status(400).json({ error: 'Header X-Gym-Id requerido' });
+      res.status(400).json({ error: 'Header X-Gym-Id requerido' });
+      return;
     }
 
     try {
-      const roles = await gymRoleRepository.findRolesByUserAndGym(req.userId, gymId);
+      const roles = await gymRoleRepository.findRolesByUserAndGym(authReq.userId, gymId);
 
       if (roles.length === 0) {
-        return res.status(403).json({ error: 'No tienes acceso a este gimnasio' });
+        res.status(403).json({ error: 'No tienes acceso a este gimnasio' });
+        return;
       }
 
       const scopedReq = req as GymScopedRequest;
@@ -31,7 +34,7 @@ export function resolveGymContext(gymRoleRepository: IGymRoleRepository) {
 
       next();
     } catch {
-      return res.status(500).json({ error: 'Error interno del servidor' });
+      res.status(500).json({ error: 'Error interno del servidor' });
     }
   };
 }

@@ -7,6 +7,7 @@ import { WebhookController } from '../controllers/WebhookController.js';
 import { BillingController } from '../controllers/BillingController.js';
 import { CreatePaymentPreferenceUseCase } from '../../application/use-cases/CreatePaymentPreferenceUseCase.js';
 import { authWebhook } from '../../../../shared/infrastructure/middleware/authWebhook.js';
+import { authenticate } from '../../../../shared/infrastructure/middleware/authenticate.js';
 
 const router = Router();
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
@@ -22,6 +23,6 @@ const billingController = new BillingController(createPreferenceUseCase);
 router.post('/webhook', authWebhook, (req, res) => controller.handle(req, res));
 
 // Ruta para crear preferencia (esta no necesita authWebhook porque la llama el Front)
-router.post('/create-preference', (req, res) => billingController.createPreference(req, res));
+router.post('/create-preference', authenticate, (req, res) => billingController.createPreference(req, res));
 
 export default router;

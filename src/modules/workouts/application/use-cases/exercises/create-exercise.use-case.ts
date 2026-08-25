@@ -11,16 +11,14 @@ interface CreateExerciseInput {
 export class CreateExerciseUseCase {
   constructor(private exerciseRepository: ExerciseRepository) {}
 
-  async execute(input: CreateExerciseInput) {
-    // 1. Creamos la entidad (validada)
+  async execute(input: CreateExerciseInput, gymId?: string) {
     const exercise = Exercise.create({
       id: randomUUID(),
       name: input.name,
-      muscleGroup: input.muscle_group, // Mapeo de snake a camel
+      muscleGroup: input.muscle_group,
       mediaUrl: input.media_url ?? null
     });
 
-    // 2. Pasamos la entidad completa al repositorio
-    return await this.exerciseRepository.create(exercise);
+    return await this.exerciseRepository.create(exercise, gymId);
   }
 }

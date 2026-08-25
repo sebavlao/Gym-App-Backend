@@ -32,6 +32,24 @@ export class PrismaMembershipRepository implements IMembershipRepository {
     return prismaMemberships.map(MembershipMapper.toDomain);
   }
 
+  async findByGymId(gymId: string): Promise<Membership[]> {
+    const prismaMemberships = await this.prisma.membership.findMany({
+      where: { gym_id: gymId },
+      include: this.includeRelations,
+    });
+
+    return prismaMemberships.map(MembershipMapper.toDomain);
+  }
+
+  async findByGymIdAndCoachId(gymId: string, coachId: string): Promise<Membership[]> {
+    const prismaMemberships = await this.prisma.membership.findMany({
+      where: { gym_id: gymId, coach_id: coachId },
+      include: this.includeRelations,
+    });
+
+    return prismaMemberships.map(MembershipMapper.toDomain);
+  }
+
   // FIX CRÍTICO: Usamos upsert para que "save" sirva tanto para crear como para actualizar sin romper llaves primarias
   async save(membership: Membership): Promise<void> {
     const persistenceData = MembershipMapper.toPersistence(membership);

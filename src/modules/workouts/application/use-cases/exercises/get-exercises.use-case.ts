@@ -1,5 +1,5 @@
 import type { ExerciseRepository } from '../../../domain/repositories/IExerciseRepository.js';
-import type { Exercise } from '../../../../../generated/prisma/client/client.js';
+import type { Exercise } from '../../../domain/entities/Exercise.js';
 
 export class GetExercisesUseCase {
   constructor(private exerciseRepository: ExerciseRepository) {}

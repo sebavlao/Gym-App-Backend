@@ -33,9 +33,15 @@ export class UserController {
         });
       }
 
-      if (role === 'Client' && (!bloodType || !pathologies || !emergencyContact)) {
+      if (role !== 'Client') {
+        return res.status(403).json({ 
+          error: 'El registro público solo permite crear cuentas de alumno (Client)' 
+        });
+      }
+
+      if (!bloodType || !pathologies || !emergencyContact) {
         return res.status(400).json({ 
-          error: 'Faltan campos médicos obligatorios para el rol de Cliente: bloodType, pathologies, emergencyContact' 
+          error: 'Faltan campos médicos obligatorios: bloodType, pathologies, emergencyContact' 
         });
       }
 

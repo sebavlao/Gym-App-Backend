@@ -10,23 +10,35 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 export class PrismaExerciseRepository implements ExerciseRepository {
-  async create(exercise: Exercise): Promise<Exercise> {
-    // Aquí recibimos la entidad de dominio y la pasamos a Prisma
+  async create(exercise: Exercise, gymId?: string): Promise<Exercise> {
     const raw = await prisma.exercise.create({
       data: {
         id: exercise.id,
         name: exercise.name,
-        muscle_group: exercise.muscleGroup, // Mapeo: dominio -> base de datos
+        muscle_group: exercise.muscleGroup,
         media_url: exercise.mediaUrl ?? null,
+        gym_id: gymId ?? null,
+        is_custom: gymId ? true : false,
       },
     });
     
-    // Retornamos la entidad mapeada
     return ExerciseMapper.toDomain(raw);
   }
 
   async findAll(): Promise<Exercise[]> {
     const raws = await prisma.exercise.findMany();
+    return raws.map(ExerciseMapper.toDomain);
+  }
+
+  async findAllByGym(gymId: string): Promise<Exercise[]> {
+    const raws = await prisma.exercise.findMany({
+      where: {
+        OR: [
+          { gym_id: null },
+          { gym_id: gymId },
+        ],
+      },
+    });
     return raws.map(ExerciseMapper.toDomain);
   }
 

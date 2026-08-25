@@ -42,4 +42,22 @@ export class PrismaGymRoleRepository implements IGymRoleRepository {
 
     return gymRoles.map(gr => gr.role);
   }
+
+  async create(userId: string, gymId: string, role: string): Promise<void> {
+    await this.prisma.gymRole.upsert({
+      where: {
+        user_id_gym_id_role: {
+          user_id: userId,
+          gym_id: gymId,
+          role: role as any,
+        },
+      },
+      update: {},
+      create: {
+        user_id: userId,
+        gym_id: gymId,
+        role: role as any,
+      },
+    });
+  }
 }

@@ -55,6 +55,7 @@ describe('GetUserGymsUseCase', () => {
         makeGymRole('gym-1', 'Gym Patán', ['CLIENT']),
       ]),
       findRolesByUserAndGym: vi.fn(),
+      create: vi.fn(),
     };
 
     const useCase = new GetUserGymsUseCase(repo);
@@ -73,6 +74,7 @@ describe('GetUserGymsUseCase', () => {
         makeGymRole('gym-1', 'Gym A', ['COACH', 'GYM_ADMIN']),
       ]),
       findRolesByUserAndGym: vi.fn(),
+      create: vi.fn(),
     };
 
     const useCase = new GetUserGymsUseCase(repo);
@@ -89,6 +91,7 @@ describe('GetUserGymsUseCase', () => {
         makeGymRole('gym-b', 'Gym B', ['COACH']),
       ]),
       findRolesByUserAndGym: vi.fn(),
+      create: vi.fn(),
     };
 
     const useCase = new GetUserGymsUseCase(repo);
@@ -102,6 +105,7 @@ describe('GetUserGymsUseCase', () => {
     const repo: IGymRoleRepository = {
       findGymsByUserId: vi.fn().mockResolvedValue([]),
       findRolesByUserAndGym: vi.fn(),
+      create: vi.fn(),
     };
 
     const useCase = new GetUserGymsUseCase(repo);
@@ -118,6 +122,7 @@ describe('resolveGymContext middleware', () => {
     const repo: IGymRoleRepository = {
       findGymsByUserId: vi.fn(),
       findRolesByUserAndGym: vi.fn(),
+      create: vi.fn(),
     };
 
     const middleware = resolveGymContext(repo);
@@ -138,6 +143,7 @@ describe('resolveGymContext middleware', () => {
     const repo: IGymRoleRepository = {
       findGymsByUserId: vi.fn(),
       findRolesByUserAndGym: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
     };
 
     const middleware = resolveGymContext(repo);
@@ -155,6 +161,7 @@ describe('resolveGymContext middleware', () => {
     const repo: IGymRoleRepository = {
       findGymsByUserId: vi.fn(),
       findRolesByUserAndGym: vi.fn().mockResolvedValue(['CLIENT']),
+      create: vi.fn(),
     };
 
     const middleware = resolveGymContext(repo);
@@ -174,6 +181,7 @@ describe('resolveGymContext middleware', () => {
     const repo: IGymRoleRepository = {
       findGymsByUserId: vi.fn(),
       findRolesByUserAndGym: vi.fn().mockResolvedValue(['COACH', 'GYM_ADMIN']),
+      create: vi.fn(),
     };
 
     const middleware = resolveGymContext(repo);
@@ -244,6 +252,7 @@ describe('Seguridad de contexto', () => {
     const repo: IGymRoleRepository = {
       findGymsByUserId: vi.fn(),
       findRolesByUserAndGym: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
     };
 
     const middleware = resolveGymContext(repo);
@@ -265,6 +274,7 @@ describe('Seguridad de contexto', () => {
     const repo: IGymRoleRepository = {
       findGymsByUserId: vi.fn(),
       findRolesByUserAndGym: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
     };
 
     const middleware = resolveGymContext(repo);
