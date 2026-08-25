@@ -1,33 +1,20 @@
-import { MissingMedicalFieldsError } from '../../../../shared/domain/errors/DomainError';
+import type { DomainError } from '../../../../shared/domain/errors/DomainError';
 
 interface ClientDetailProps {
   id: string;
   userId: string;
-  bloodType: string; // Made mandatory per requirement
-  pathologies: string; // Made mandatory per requirement
-  emergencyContact: string; // Made mandatory per requirement
+  bloodType?: string | null;
+  pathologies?: string | null;
+  emergencyContact?: string | null;
   allergies?: string | null;
   observations?: string | null;
 }
 
 export class ClientDetail {
-  private constructor(private readonly props: ClientDetailProps) {
-    this.validate();
-  }
+  private constructor(private readonly props: ClientDetailProps) {}
 
   public static create(props: ClientDetailProps): ClientDetail {
     return new ClientDetail(props);
-  }
-
-  private validate(): void {
-    const missingFields: string[] = [];
-    if (!this.props.bloodType) missingFields.push('bloodType');
-    if (!this.props.pathologies) missingFields.push('pathologies');
-    if (!this.props.emergencyContact) missingFields.push('emergencyContact');
-
-    if (missingFields.length > 0) {
-      throw new MissingMedicalFieldsError(missingFields);
-    }
   }
 
   get id(): string {
@@ -36,13 +23,13 @@ export class ClientDetail {
   get userId(): string {
     return this.props.userId;
   }
-  get bloodType(): string {
+  get bloodType(): string | null | undefined {
     return this.props.bloodType;
   }
-  get pathologies(): string {
+  get pathologies(): string | null | undefined {
     return this.props.pathologies;
   }
-  get emergencyContact(): string {
+  get emergencyContact(): string | null | undefined {
     return this.props.emergencyContact;
   }
   get allergies(): string | null | undefined {

@@ -1,4 +1,4 @@
-import { InvalidMembershipStatusError } from '../../../../shared/domain/errors/DomainError';
+import { InvalidMembershipStatusError } from '../../../../shared/domain/errors/DomainError.js';
 
 export enum MembershipStatus {
   Active = 'active',
@@ -12,6 +12,8 @@ interface MembershipProps {
   gymId: string;
   coachId?: string | null;
   status: MembershipStatus;
+  // Agregamos un genérico para transportar los datos del usuario mapeados en el infra
+  userDetails?: any; 
 }
 
 export class Membership {
@@ -41,5 +43,7 @@ export class Membership {
   get userId(): string { return this.props.userId; }
   get gymId(): string { return this.props.gymId; }
   get coachId(): string | null | undefined { return this.props.coachId; }
+  set coachId(value: string | null | undefined) { this.props.coachId = value; }
   get status(): MembershipStatus { return this.props.status; }
+  get userDetails(): any { return this.props.userDetails; } // Getter expuesto
 }

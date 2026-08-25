@@ -9,7 +9,10 @@ export interface RegisterUserCommand {
   email: string;
   passwordRaw: string;
   role: UserRole;
-  // Medical fields for client
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  // Medical fields for client (optional)
   bloodType?: string;
   pathologies?: string;
   allergies?: string;
@@ -38,9 +41,9 @@ export class RegisterUserUseCase {
       clientDetail = ClientDetail.create({
         id: crypto.randomUUID(),
         userId: command.id,
-        bloodType: command.bloodType || '',
-        pathologies: command.pathologies || '',
-        emergencyContact: command.emergencyContact || '',
+        bloodType: command.bloodType,
+        pathologies: command.pathologies,
+        emergencyContact: command.emergencyContact,
         allergies: command.allergies,
         observations: command.observations,
       });
@@ -61,6 +64,9 @@ export class RegisterUserUseCase {
       email: command.email,
       password: hashedPassword,
       role: command.role,
+      firstName: command.firstName,
+      lastName: command.lastName,
+      phone: command.phone,
       clientDetail,
       coachDetail,
     });

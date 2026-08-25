@@ -32,6 +32,25 @@ export class PrismaUserRepository implements IUserRepository {
     return UserMapper.toDomain(prismaUser);
   }
 
+  async findUsersByGymAndRole(gymId: string, role: string): Promise<User[]> {
+    const gymRoles = await this.prisma.gymRole.findMany({
+      where: {
+        gym_id: gymId,
+        role: role as any,
+      },
+      include: {
+        user: {
+          include: {
+            clientDetail: true,
+            coachDetail: true,
+          },
+        },
+      },
+    });
+
+    return gymRoles.map(gr => UserMapper.toDomain(gr.user));
+  }
+
   async save(user: User): Promise<void> {
     const persistenceData = UserMapper.toPersistence(user);
 

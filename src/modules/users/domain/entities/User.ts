@@ -13,6 +13,9 @@ interface UserProps {
   email: string;
   password?: string;
   role: UserRole;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
   qrCode?: string | null;
   clientDetail?: ClientDetail | null;
   coachDetail?: CoachDetail | null;
@@ -60,6 +63,15 @@ export class User {
   get role(): UserRole {
     return this.props.role;
   }
+  get firstName(): string {
+    return this.props.firstName;
+  }
+  get lastName(): string {
+    return this.props.lastName;
+  }
+  get phone(): string | null | undefined {
+    return this.props.phone;
+  }
   get qrCode(): string | null | undefined {
     return this.props.qrCode;
   }
@@ -68,5 +80,10 @@ export class User {
   }
   get coachDetail(): CoachDetail | null | undefined {
     return this.props.coachDetail;
+  }
+
+  // Setter para password (solo para cambio de contraseña)
+  setPassword(newPassword: string): void {
+    (this.props as any).password = newPassword;
   }
 }

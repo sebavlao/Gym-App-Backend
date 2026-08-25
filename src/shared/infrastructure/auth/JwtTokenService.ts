@@ -8,7 +8,7 @@ export class JwtTokenService {
     this.secret = process.env.JWT_SECRET || 'fallback-secret-for-development';
   }
 
-  generate(payload: { id: string; email: string; role: string }): string {
+  generate(payload: { userId: string; email: string }): string {
     return jwt.sign(payload, this.secret, { expiresIn: '1d' });
   }
 

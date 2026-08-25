@@ -1,19 +1,22 @@
-import type { IMembershipRepository } from '../../domain/repositories/IMembershipRepository';
-import { Membership } from '../../domain/entities/Membership';
-import { MembershipMapper } from './MembershipMapper';
-import { PrismaClient } from '../../../../generated/prisma/client/client';
+import type { IMembershipRepository } from '../../domain/repositories/IMembershipRepository.js';
+import { Membership } from '../../domain/entities/Membership.js';
+import { MembershipMapper } from './MembershipMapper.js';
+import { PrismaClient } from '../../../../generated/prisma/client/client.js';
 
 export class PrismaMembershipRepository implements IMembershipRepository {
+  // Centralizamos la inclusión de relaciones para no repetir código
+  private readonly includeRelations = {
+    user: true,
+    gym: true,
+    coach: true,
+  };
+
   constructor(private readonly prisma: PrismaClient) {}
 
   async findById(id: string): Promise<Membership | null> {
     const prismaMembership = await this.prisma.membership.findUnique({
       where: { id },
-      include: {
-        user: true,
-        gym: true,
-        coach: true,
-      },
+      include: this.includeRelations,
     });
 
     if (!prismaMembership) return null;
@@ -23,21 +26,38 @@ export class PrismaMembershipRepository implements IMembershipRepository {
   async findByUserId(userId: string): Promise<Membership[]> {
     const prismaMemberships = await this.prisma.membership.findMany({
       where: { user_id: userId },
-      include: {
-        user: true,
-        gym: true,
-        coach: true,
-      },
+      include: this.includeRelations,
     });
 
     return prismaMemberships.map(MembershipMapper.toDomain);
   }
 
+  async findByGymId(gymId: string): Promise<Membership[]> {
+    const prismaMemberships = await this.prisma.membership.findMany({
+      where: { gym_id: gymId },
+      include: this.includeRelations,
+    });
+
+    return prismaMemberships.map(MembershipMapper.toDomain);
+  }
+
+  async findByGymIdAndCoachId(gymId: string, coachId: string): Promise<Membership[]> {
+    const prismaMemberships = await this.prisma.membership.findMany({
+      where: { gym_id: gymId, coach_id: coachId },
+      include: this.includeRelations,
+    });
+
+    return prismaMemberships.map(MembershipMapper.toDomain);
+  }
+
+  // FIX CRÍTICO: Usamos upsert para que "save" sirva tanto para crear como para actualizar sin romper llaves primarias
   async save(membership: Membership): Promise<void> {
     const persistenceData = MembershipMapper.toPersistence(membership);
 
-    await this.prisma.membership.create({
-      data: persistenceData,
+    await this.prisma.membership.upsert({
+      where: { id: membership.id },
+      update: persistenceData,
+      create: persistenceData,
     });
   }
 

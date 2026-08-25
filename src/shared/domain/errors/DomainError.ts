@@ -1,5 +1,6 @@
 export class DomainError extends Error {
-  constructor(public readonly message: string, public readonly code: string) {
+  // Hacemos que 'code' sea opcional con el valor por defecto 'DOMAIN_ERROR'
+  constructor(public readonly message: string, public readonly code: string = 'DOMAIN_ERROR') {
     super(message);
     this.name = 'DomainError';
   }
