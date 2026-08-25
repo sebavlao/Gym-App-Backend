@@ -3,21 +3,38 @@ import { PrismaClient } from '../../../../generated/prisma/client/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaUserRepository } from '../persistence/PrismaUserRepository.js';
 import { RegisterUserUseCase } from '../../application/use-cases/auth/RegisterUserUseCase.js';
+import { LoginUserUseCase } from '../../application/use-cases/auth/LoginUserUseCase.js';
+import { GetUserProfileUseCase } from '../../application/use-cases/users/GetUserProfileUseCase.js';
 import { BcryptHasher } from '../../../../shared/infrastructure/cryptography/BcryptHasher.js';
+import { JwtTokenService } from '../../../../shared/infrastructure/auth/JwtTokenService.js';
 import { UserController } from '../controllers/UserController.js';
+import { authenticate } from '../../../../shared/infrastructure/middleware/authenticate.js';
 
 const router = Router();
 
-// Configuración correcta del adaptador (igual que en index.ts)
 const connectionString = process.env.DATABASE_URL!;
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 const userRepository = new PrismaUserRepository(prisma);
 const hasher = new BcryptHasher();
-const registerUserUseCase = new RegisterUserUseCase(userRepository, hasher);
-const controller = new UserController(registerUserUseCase);
+const tokenService = new JwtTokenService();
 
+const registerUserUseCase = new RegisterUserUseCase(userRepository, hasher);
+const loginUserUseCase = new LoginUserUseCase(userRepository, hasher, tokenService);
+const getUserProfileUseCase = new GetUserProfileUseCase(userRepository);
+
+const controller = new UserController(
+  registerUserUseCase,
+  loginUserUseCase,
+  getUserProfileUseCase,
+);
+
+// Públicas
 router.post('/register', (req, res) => controller.register(req, res));
+router.post('/login', (req, res) => controller.login(req, res));
+
+// Protegidas
+router.get('/me', authenticate, (req, res) => controller.me(req, res));
 
 export default router;

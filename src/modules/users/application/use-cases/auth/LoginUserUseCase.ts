@@ -16,7 +16,6 @@ export interface LoginResult {
   user: {
     id: string;
     email: string;
-    role: string;
   };
 }
 
@@ -46,9 +45,8 @@ export class LoginUserUseCase {
     }
 
     const token = this.tokenService.generate({
-      id: user.id,
+      userId: user.id,
       email: user.email,
-      role: user.role,
     });
 
     return {
@@ -56,7 +54,6 @@ export class LoginUserUseCase {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
       },
     };
   }

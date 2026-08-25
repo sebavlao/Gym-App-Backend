@@ -15,6 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { GymRoleType, Role } from '../../../generated/prisma/client/enums';
+import { describe, it, expect } from 'vitest';
 
 const schemaPath = path.resolve(__dirname, '../../../../prisma/schema.prisma');
 const schema = fs.readFileSync(schemaPath, 'utf-8');
