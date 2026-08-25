@@ -232,6 +232,7 @@ describe('UserController.me', () => {
       mockUseCases.register,
       mockUseCases.login,
       mockUseCases.profile,
+      { execute: vi.fn() } as any,
     );
 
     const req = mockReq();
@@ -263,6 +264,7 @@ describe('UserController.me', () => {
       mockUseCases.register,
       mockUseCases.login,
       mockUseCases.profile,
+      { execute: vi.fn() } as any,
     );
 
     // Simular que el body tiene un userId diferente, pero el JWT tiene otro

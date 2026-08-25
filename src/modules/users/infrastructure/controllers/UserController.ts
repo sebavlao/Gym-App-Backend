@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { RegisterUserUseCase } from '../../application/use-cases/auth/RegisterUserUseCase.js';
 import { LoginUserUseCase } from '../../application/use-cases/auth/LoginUserUseCase.js';
 import { GetUserProfileUseCase } from '../../application/use-cases/users/GetUserProfileUseCase.js';
+import { GetUserGymsUseCase } from '../../application/use-cases/users/GetUserGymsUseCase.js';
 import type { AuthenticatedRequest } from '../../../../shared/infrastructure/middleware/authenticate.js';
 import { randomUUID } from 'crypto';
 
@@ -10,6 +11,7 @@ export class UserController {
     private registerUserUseCase: RegisterUserUseCase,
     private loginUserUseCase: LoginUserUseCase,
     private getUserProfileUseCase: GetUserProfileUseCase,
+    private getUserGymsUseCase: GetUserGymsUseCase,
   ) {}
 
   async register(req: Request, res: Response) {
@@ -93,6 +95,17 @@ export class UserController {
         return res.status(404).json({ error: 'Usuario no encontrado' });
       }
       console.error('🔴 ERROR EN ME:', error);
+      res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+
+  async meGyms(req: Request, res: Response) {
+    try {
+      const authReq = req as AuthenticatedRequest;
+      const gyms = await this.getUserGymsUseCase.execute(authReq.userId);
+      res.status(200).json(gyms);
+    } catch (error: any) {
+      console.error('🔴 ERROR EN ME/GYMS:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
